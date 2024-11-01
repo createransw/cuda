@@ -8,8 +8,6 @@
 #include <ostream>
 #include <thrust/device_vector.h>
 
-#include <cuda.h>
-
 #define SAFE_CALL(err) do {                     \
     if (err != 0) {                             \
         std::cout << "ERROR [" << __FILE__ << "] in line " << __LINE__ << ": " <<       cudaGetErrorString(err) << std::endl;   \
