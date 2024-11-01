@@ -29,6 +29,35 @@
 double eps;
 double MAXEPS = 0.5;
 
+__global__ void function(const double *A, double *B) {
+    int k = blockIdx.x * blockDim.x + threadIdx.x;
+    int j = blockIdx.y * blockDim.y + threadIdx.y;
+    int i = blockIdx.z * blockDim.z + threadIdx.z;
+
+    if ((i > 0) && (i < L - 1)) {
+        if ((j > 0) && (j < L - 1)) {
+            if ((k > 0) && (k < L - 1)) {
+                B(i, j, k) = (A(i - 1, j, k) + A(i, j - 1, k) + A(i, j, k - 1) + A(i, j, k + 1) + A(i, j + 1, k) + A(i + 1, j, k)) / 6.0;
+            }
+        }
+    }
+}
+
+__global__ void difference_ab(double *A, const double *B, double* eps) {
+    int k = blockIdx.x * blockDim.x + threadIdx.x;
+    int j = blockIdx.y * blockDim.y + threadIdx.y;
+    int i = blockIdx.z * blockDim.z + threadIdx.z;
+
+    if ((i > 0) && (i < L - 1)) {
+        if ((j > 0) && (j < L - 1)) {
+            if ((k > 0) && (k < L - 1)) {
+                eps(i, j, k) = std::fabs(B(i, j, k) - A(i, j, k));
+                A(i, j, k) = B(i, j, k);
+            }
+        }
+    }
+}
+
 double dev(const double *A, const double *B) {
     double delta = 0.0;
     int count = 0;
@@ -131,6 +160,7 @@ int main(int an, char **as)
 
 
         dim3 blockDim = dim3(16, 8, 4);
+        //int block = blockDim.x * blockDim.y * blockDim.z;
         dim3 gridDim = dim3(L / 16 + 1, L / 8 + 1, L / 4 + 1);
 
         cudaEvent_t startt, endt;
@@ -142,12 +172,10 @@ int main(int an, char **as)
         for (int it = 1; it <= ITMAX; it++) {
             thrust::device_vector<double> diff(L * L * L);
             double *ptrdiff = thrust::raw_pointer_cast(&diff[0]);
-
-            launch_difference_ab(A_device, B_device, ptrdiff);
-
+            difference_ab<<<gridDim, blockDim>>>(A_device, B_device, ptrdiff);
             double eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             
-            launch_function(A_device, B_device);
+            function<<<gridDim, blockDim>>>(A_device, B_device);
 
             if (eps < MAXEPS)
                 break;
