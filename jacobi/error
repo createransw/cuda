@@ -1,0 +1,89 @@
+In file included from ./jacobi.cpp:11:0:
+./cuda.cu: In function ‘void function(const double*, double*)’:
+./cuda.cu:13:13: error: ‘blockIdx’ was not declared in this scope
+     int k = blockIdx.x * blockDim.x + threadIdx.x;
+             ^
+./cuda.cu:13:26: error: ‘blockDim’ was not declared in this scope
+     int k = blockIdx.x * blockDim.x + threadIdx.x;
+                          ^
+./cuda.cu:13:39: error: ‘threadIdx’ was not declared in this scope
+     int k = blockIdx.x * blockDim.x + threadIdx.x;
+                                       ^
+In file included from ./jacobi.cpp:11:0:
+./cuda.cu: In function ‘void difference_ab(double*, const double*, double*)’:
+./cuda.cu:27:13: error: ‘blockIdx’ was not declared in this scope
+     int k = blockIdx.x * blockDim.x + threadIdx.x;
+             ^
+./cuda.cu:27:26: error: ‘blockDim’ was not declared in this scope
+     int k = blockIdx.x * blockDim.x + threadIdx.x;
+                          ^
+./cuda.cu:27:39: error: ‘threadIdx’ was not declared in this scope
+     int k = blockIdx.x * blockDim.x + threadIdx.x;
+                                       ^
+./cuda.cu: In function ‘void launch_function(const double*, double*)’:
+./cuda.cu:45:15: error: expected primary-expression before ‘<’ token
+     function<<<gridDim, blockDim>>>(A, B);
+               ^
+./cuda.cu:45:35: error: expected primary-expression before ‘>’ token
+     function<<<gridDim, blockDim>>>(A, B);
+                                   ^
+./cuda.cu: In function ‘void launch_difference_ab(double*, const double*, double*)’:
+./cuda.cu:53:20: error: expected primary-expression before ‘<’ token
+     difference_ab<<<gridDim, blockDim>>>(A, B, eps);
+                    ^
+./cuda.cu:53:40: error: expected primary-expression before ‘>’ token
+     difference_ab<<<gridDim, blockDim>>>(A, B, eps);
+                                        ^
+In file included from /usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/system/detail/generic/for_each.h:27:0,
+                 from /usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/detail/for_each.inl:26,
+                 from /usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/for_each.h:279,
+                 from /usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/system/detail/generic/transform.inl:19,
+                 from /usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/system/detail/generic/transform.h:105,
+                 from /usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/detail/transform.inl:25,
+                 from /usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/transform.h:724,
+                 from /usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/system/detail/generic/copy.inl:23,
+                 from /usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/system/detail/generic/copy.h:58,
+                 from /usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/detail/copy.inl:21,
+                 from /usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/detail/copy.h:90,
+                 from /usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/detail/allocator/copy_construct_range.inl:21,
+                 from /usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/detail/allocator/copy_construct_range.h:46,
+                 from /usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/detail/contiguous_storage.inl:22,
+                 from /usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/detail/contiguous_storage.h:240,
+                 from /usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/detail/vector_base.h:29,
+                 from /usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/device_vector.h:25,
+                 from ./jacobi.cpp:9:
+/usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/system/detail/generic/for_each.h: In instantiation of ‘T thrust::system::detail::generic::reduce(thrust::execution_policy<Derived>&, InputIterator, InputIterator, T, BinaryFunction) [with DerivedPolicy = thrust::cuda_cub::tag; InputIterator = thrust::detail::normal_iterator<thrust::device_ptr<double> >; T = double; BinaryFunction = thrust::maximum<double>]’:
+/usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/detail/reduce.inl:71:110:   required from ‘T thrust::reduce(const thrust::detail::execution_policy_base<DerivedPolicy>&, InputIterator, InputIterator, T, BinaryFunction) [with DerivedPolicy = thrust::cuda_cub::tag; InputIterator = thrust::detail::normal_iterator<thrust::device_ptr<double> >; T = double; BinaryFunction = thrust::maximum<double>]’
+/usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/detail/reduce.inl:186:76:   required from ‘T thrust::reduce(InputIterator, InputIterator, T, BinaryFunction) [with InputIterator = thrust::detail::normal_iterator<thrust::device_ptr<double> >; T = double; BinaryFunction = thrust::maximum<double>]’
+./jacobi.cpp:150:97:   required from here
+/usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/detail/static_assert.h:69:13: error: invalid application of ‘sizeof’ to incomplete type ‘thrust::detail::STATIC_ASSERTION_FAILURE<false>’
+       sizeof(::thrust::detail::STATIC_ASSERTION_FAILURE<(bool)(B)>)           \
+             ^
+/usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/detail/static_assert.h:83:42: note: in expansion of macro ‘THRUST_STATIC_ASSERT’
+ #define THRUST_STATIC_ASSERT_MSG(B, msg) THRUST_STATIC_ASSERT(B)
+                                          ^
+/usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/system/detail/generic/for_each.h:48:3: note: in expansion of macro ‘THRUST_STATIC_ASSERT_MSG’
+   THRUST_STATIC_ASSERT_MSG(
+   ^
+/usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/system/detail/generic/for_each.h: In instantiation of ‘InputIterator thrust::system::detail::generic::for_each_n(thrust::execution_policy<Derived>&, InputIterator, Size, UnaryFunction) [with DerivedPolicy = thrust::cuda_cub::tag; InputIterator = thrust::device_ptr<double>; Size = long unsigned int; UnaryFunction = thrust::detail::device_generate_functor<thrust::detail::fill_functor<double> >]’:
+/usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/detail/for_each.inl:71:97:   required from ‘InputIterator thrust::for_each_n(const thrust::detail::execution_policy_base<DerivedPolicy>&, InputIterator, Size, UnaryFunction) [with DerivedPolicy = thrust::cuda_cub::tag; InputIterator = thrust::device_ptr<double>; Size = long unsigned int; UnaryFunction = thrust::detail::device_generate_functor<thrust::detail::fill_functor<double> >]’
+/usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/system/detail/generic/generate.inl:92:124:   required from ‘OutputIterator thrust::system::detail::generic::generate_n(thrust::execution_policy<Derived>&, OutputIterator, Size, Generator) [with ExecutionPolicy = thrust::cuda_cub::tag; OutputIterator = thrust::device_ptr<double>; Size = long unsigned int; Generator = thrust::detail::fill_functor<double>]’
+/usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/detail/generate.inl:60:99:   required from ‘OutputIterator thrust::generate_n(const thrust::detail::execution_policy_base<DerivedPolicy>&, OutputIterator, Size, Generator) [with DerivedPolicy = thrust::cuda_cub::tag; OutputIterator = thrust::device_ptr<double>; Size = long unsigned int; Generator = thrust::detail::fill_functor<double>]’
+/usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/system/detail/generic/fill.h:41:83:   required from ‘OutputIterator thrust::system::detail::generic::fill_n(thrust::execution_policy<Derived>&, OutputIterator, Size, const T&) [with DerivedPolicy = thrust::cuda_cub::tag; OutputIterator = thrust::device_ptr<double>; Size = long unsigned int; T = double]’
+/usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/detail/fill.inl:54:97:   required from ‘OutputIterator thrust::fill_n(const thrust::detail::execution_policy_base<DerivedPolicy>&, OutputIterator, Size, const T&) [with DerivedPolicy = thrust::cuda_cub::tag; OutputIterator = thrust::device_ptr<double>; Size = long unsigned int; T = double]’
+/usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/system/detail/generic/uninitialized_fill.inl:74:42:   [ skipping 4 instantiation contexts, use -ftemplate-backtrace-limit=0 to disable ]
+/usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/detail/allocator/default_construct_range.inl:105:64:   required from ‘void thrust::detail::default_construct_range(Allocator&, Pointer, Size) [with Allocator = thrust::device_allocator<double>; Pointer = thrust::device_ptr<double>; Size = long unsigned int]’
+/usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/detail/contiguous_storage.inl:251:55:   required from ‘void thrust::detail::contiguous_storage<T, Alloc>::default_construct_n(thrust::detail::contiguous_storage<T, Alloc>::iterator, thrust::detail::contiguous_storage<T, Alloc>::size_type) [with T = double; Alloc = thrust::device_allocator<double>; thrust::detail::contiguous_storage<T, Alloc>::iterator = thrust::detail::normal_iterator<thrust::device_ptr<double> >; typename thrust::detail::allocator_traits<Alloc>::pointer = thrust::device_ptr<double>; thrust::detail::contiguous_storage<T, Alloc>::size_type = long unsigned int]’
+/usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/detail/vector_base.inl:220:5:   required from ‘void thrust::detail::vector_base<T, Alloc>::default_init(thrust::detail::vector_base<T, Alloc>::size_type) [with T = double; Alloc = thrust::device_allocator<double>; thrust::detail::vector_base<T, Alloc>::size_type = long unsigned int]’
+/usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/detail/vector_base.inl:65:17:   required from ‘thrust::detail::vector_base<T, Alloc>::vector_base(thrust::detail::vector_base<T, Alloc>::size_type) [with T = double; Alloc = thrust::device_allocator<double>; thrust::detail::vector_base<T, Alloc>::size_type = long unsigned int]’
+/usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/device_vector.h:95:16:   required from ‘thrust::device_vector<T, Alloc>::device_vector(thrust::device_vector<T, Alloc>::size_type) [with T = double; Alloc = thrust::device_allocator<double>; thrust::device_vector<T, Alloc>::size_type = long unsigned int]’
+./jacobi.cpp:145:57:   required from here
+/usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/detail/static_assert.h:69:13: error: invalid application of ‘sizeof’ to incomplete type ‘thrust::detail::STATIC_ASSERTION_FAILURE<false>’
+       sizeof(::thrust::detail::STATIC_ASSERTION_FAILURE<(bool)(B)>)           \
+             ^
+/usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/detail/static_assert.h:83:42: note: in expansion of macro ‘THRUST_STATIC_ASSERT’
+ #define THRUST_STATIC_ASSERT_MSG(B, msg) THRUST_STATIC_ASSERT(B)
+                                          ^
+/usr/local/cuda-10.2/bin/../targets/ppc64le-linux/include/thrust/system/detail/generic/for_each.h:48:3: note: in expansion of macro ‘THRUST_STATIC_ASSERT_MSG’
+   THRUST_STATIC_ASSERT_MSG(
+   ^

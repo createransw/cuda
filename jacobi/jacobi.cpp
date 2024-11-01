@@ -8,7 +8,7 @@
 #include <ostream>
 #include <thrust/device_vector.h>
 
-#include "cuda.cu"
+#include <cuda.h>
 
 #define SAFE_CALL(err) do {                     \
     if (err != 0) {                             \
