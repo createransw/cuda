@@ -60,20 +60,13 @@ __global__ void difference_ab(double *A, const double *B, double* eps) {
 
 double dev(const double *A, const double *B) {
     double delta = 0.0;
-    int count = 0;
     for (int i = 1; i < L - 1; i++)
         for (int j = 1; j < L - 1; j++)
             for (int k = 1; k < L - 1; k++)
             {
                 double tmp = fabs(B(i, j, k) - A(i, j, k));
                 delta = Max(tmp, delta);
-                if (A(i, j, k) == 0) {
-                    count++;
-                }
             }
-    if (A == B) {
-        return count;
-    }
     return delta;
 }
 
@@ -201,7 +194,6 @@ int main(int an, char **as)
     } else if (CPU) {
         std::cout << "cpu time = " << cpu_time << std::endl;
     } else if (GPU) {
-        std::cout << int(dev(A_host, A_host)) << " zeros in matrix\n";
         std::cout << "gpu time = " << gpu_time * 0.001 << std::endl;
     }
 
