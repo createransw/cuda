@@ -23,7 +23,7 @@
 #define eps(i, j, k) eps[((i) * L + (j)) * L + (k)]
 
 
-#define L 1021
+#define L 1010
 #define ITMAX 100
 
 double eps;
