@@ -95,13 +95,13 @@ int main(int an, char **as)
     std::cout << "usage:\t\tyacoby -[cg]" << std::endl;
 
     bool CPU = false;
-    bool GPU = false;
-    if (an < 2) {
-        std::cerr << "specify device" << std::endl;
-    }
-    for (int i = 0; as[1][i] != '\0'; ++i) {
-        if (as[1][i] == 'g') GPU = true;
-        if (as[1][i] == 'c') CPU = true;
+    bool GPU = true;
+    if (an >= 2) {
+        GPU = false;
+        for (int i = 0; as[1][i] != '\0'; ++i) {
+            if (as[1][i] == 'g') GPU = true;
+            if (as[1][i] == 'c') CPU = true;
+        }
     }
 
     const int size = L * L * L * sizeof(double);
