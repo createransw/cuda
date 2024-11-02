@@ -10,7 +10,7 @@
 
 #define SAFE_CALL(err) do {                     \
     if (err != 0) {                             \
-        std::cout << "ERROR [" << __FILE__ << "] in line " << __LINE__ << ": " <<       cudaGetErrorString(err) << std::endl;   \
+        std::cerr << "ERROR [" << __FILE__ << "] in line " << __LINE__ << ": " <<       cudaGetErrorString(err) << std::endl;   \
         exit(1);                                \
     }                                           \
 } while(0)
@@ -23,7 +23,7 @@
 #define eps(i, j, k) eps[((i) * L + (j)) * L + (k)]
 
 
-#define L 1280
+#define L 1200
 #define ITMAX 100
 
 double eps;
