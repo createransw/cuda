@@ -104,7 +104,7 @@ int main(int an, char **as)
         }
     }
 
-    const int size = L * L * L * sizeof(double);
+    const long size = L * L * L * sizeof(double);
     
     double *A = (double*)malloc(size);
     double *B = (double*)malloc(size);
