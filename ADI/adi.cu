@@ -162,6 +162,7 @@ int main(int argc, char *argv[])
         std::cout << "cpu time = " << cpu_time << std::endl;
     } else if (GPU) {
         std::cout << "gpu time = " << gpu_time * 0.001 << std::endl;
+        std::cout << dev(A_host, A_host) << " zeros in matrix\n";
     }
 
 
@@ -185,13 +186,15 @@ void init(double *A)
 
 double dev(const double *A, const double *B) {
     double delta = 0.0;
+    int count = 0;
     for (int i = 1; i < nx - 1; i++)
         for (int j = 1; j < ny - 1; j++)
             for (int k = 1; k < nz - 1; k++)
             {
                 double tmp = fabs(B(i, j, k) - A(i, j, k));
                 delta = Max(tmp, delta);
-            }
-    return delta;
-}
 
+                if (A(i, j, k) == 0) count++;
+            }
+    return A == B ? count : delta;
+}
