@@ -23,7 +23,8 @@
 #define eps(i, j, k) eps[((i) * L + (j)) * L + (k)]
 
 
-#define L 885
+//#define L 885
+#define L 384
 #define ITMAX 100
 
 double eps;
@@ -151,6 +152,9 @@ int main(int an, char **as)
         SAFE_CALL(cudaMalloc((void**)&B_device, size));
         SAFE_CALL(cudaMemcpy(B_device, B_host, size, cudaMemcpyHostToDevice));
 
+        thrust::device_vector<double> diff(L * L * L);
+        double *ptrdiff = thrust::raw_pointer_cast(&diff[0]);
+
 
         dim3 blockDim = dim3(16, 8, 4);
         //int block = blockDim.x * blockDim.y * blockDim.z;
@@ -163,8 +167,6 @@ int main(int an, char **as)
         cudaEventRecord(startt, 0);
         /* iteration loop */
         for (int it = 1; it <= ITMAX; it++) {
-            thrust::device_vector<double> diff(L * L * L);
-            double *ptrdiff = thrust::raw_pointer_cast(&diff[0]);
             difference_ab<<<gridDim, blockDim>>>(A_device, B_device, ptrdiff);
             double eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             
