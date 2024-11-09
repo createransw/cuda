@@ -33,7 +33,7 @@ double itmax = 100;
 void init(double *a);
 double dev(const double *A, const double *B);
 
-__global__ void function(double *A, double *eps) {
+__global__ void function_i(double *A) {
     int k = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
     int i = blockIdx.z * blockDim.z + threadIdx.z;
@@ -42,12 +42,22 @@ __global__ void function(double *A, double *eps) {
         if ((j >= 1) && (j < ny - 1))
             if ((k >= 1) &&  (k < nz - 1))
                 A(i, j, k) = (A(i-1, j, k) + A(i+1, j, k)) / 2;
+}
 
+__global__ void function_j(double *A) {
+    int k = blockIdx.x * blockDim.x + threadIdx.x;
+    int j = blockIdx.y * blockDim.y + threadIdx.y;
+    int i = blockIdx.z * blockDim.z + threadIdx.z;
     if ((i >= 1) && (i < nx - 1))
         if ((j >= 1) && (j < ny - 1))
             if ((k >= 1) && (k < nz - 1))
                 A(i, j, k) = (A(i, j-1, k) + A(i, j+1, k)) / 2;
+}
 
+__global__ void function_k(double *A, double *eps) {
+    int k = blockIdx.x * blockDim.x + threadIdx.x;
+    int j = blockIdx.y * blockDim.y + threadIdx.y;
+    int i = blockIdx.z * blockDim.z + threadIdx.z;
     if ((i >= 1) && (i < nx - 1))
         if ((j >= 1) && (j < ny - 1))
             if ((k >= 1) && (k < nz - 1))
@@ -137,7 +147,9 @@ int main(int argc, char *argv[])
 
         SAFE_CALL(cudaEventRecord(startt, 0));
         for (int it = 1; it <= itmax; it++) {
-            function<<<gridDim, blockDim>>>(A_device, ptrdiff);
+            function_i<<<gridDim, blockDim>>>(A_device);
+            function_j<<<gridDim, blockDim>>>(A_device);
+            function_k<<<gridDim, blockDim>>>(A_device, ptrdiff);
             double eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             if (eps < maxeps)
                 break;
