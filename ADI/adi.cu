@@ -148,8 +148,11 @@ int main(int argc, char *argv[])
         SAFE_CALL(cudaEventRecord(startt, 0));
         for (int it = 1; it <= itmax; it++) {
             function_i<<<gridDim, blockDim>>>(A_device);
+            SAFE_CALL(cudaDeviceSynchronize());
             function_j<<<gridDim, blockDim>>>(A_device);
+            SAFE_CALL(cudaDeviceSynchronize());
             function_k<<<gridDim, blockDim>>>(A_device, ptrdiff);
+            SAFE_CALL(cudaDeviceSynchronize());
             double eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             if (eps < maxeps)
                 break;
