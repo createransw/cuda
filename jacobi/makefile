@@ -1,8 +1,7 @@
 CC = nvcc
 CFLAGS = -O3
-SOURCES = jacoby.cu
-OBJECTS = $(SOURCES:.c=.o)
-TARGET = jacoby
+SOURCES = jacobi.cu
+TARGET = jacobi
 
-$(TARGET) : $(OBJECTS)
+$(TARGET) : $(SOURCES)
 	$(CC) -Xcompiler=$(CFLAGS) -o $@ $^
