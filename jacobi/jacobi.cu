@@ -23,14 +23,14 @@
 #define eps(i, j, k) eps[((i) * L + (j)) * L + (k)]
 
 
-#define L 885
-//#define L 384
+// #define L 885
+#define L 50
 #define ITMAX 100
 
 double eps;
 double MAXEPS = 0.5;
 
-__global__ void function(const double *A, double *B) {
+__global__ void function(double *A, double *B, double* eps) {
     int k = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
     int i = blockIdx.z * blockDim.z + threadIdx.z;
@@ -38,7 +38,10 @@ __global__ void function(const double *A, double *B) {
     if ((i > 0) && (i < L - 1)) {
         if ((j > 0) && (j < L - 1)) {
             if ((k > 0) && (k < L - 1)) {
-                B(i, j, k) = (A(i - 1, j, k) + A(i, j - 1, k) + A(i, j, k - 1) + A(i, j, k + 1) + A(i, j + 1, k) + A(i + 1, j, k)) / 6.0;
+                double tmp = (A(i - 1, j, k) + A(i, j - 1, k) + A(i, j, k - 1) + A(i, j, k + 1) + A(i, j + 1, k) + A(i + 1, j, k)) / 6.0;
+                eps(i, j, k) = std::fabs(tmp - A(i, j, k));
+                B(i, j, k) = tmp;
+                A(i, j, k) = tmp;
             }
         }
     }
@@ -167,10 +170,10 @@ int main(int an, char **as)
         cudaEventRecord(startt, 0);
         /* iteration loop */
         for (int it = 1; it <= ITMAX; it++) {
-            difference_ab<<<gridDim, blockDim>>>(A_device, B_device, ptrdiff);
+            function<<<gridDim, blockDim>>>(A_device, B_device, ptrdiff);
             double eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             
-            function<<<gridDim, blockDim>>>(A_device, B_device);
+            //function<<<gridDim, blockDim>>>(A_device, B_device);
 
             if (eps < MAXEPS)
                 break;
