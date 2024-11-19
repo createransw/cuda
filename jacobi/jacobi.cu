@@ -156,7 +156,7 @@ int main(int an, char **as)
         double *ptrdiff = thrust::raw_pointer_cast(&diff[0]);
 
 
-        dim3 blockDim = dim3(4, 4, 32);
+        dim3 blockDim = dim3(16, 8, 4);
         //int block = blockDim.x * blockDim.y * blockDim.z;
         dim3 gridDim = dim3(L / 4 + 1, L / 4 + 1, L / 32 + 1);
 
