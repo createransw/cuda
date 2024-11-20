@@ -155,6 +155,8 @@ int main(int an, char **as)
         thrust::device_vector<double> diff(L * L * L);
         double *ptrdiff = thrust::raw_pointer_cast(&diff[0]);
         double eps = 0.0;
+        auto begin = diff.begin();
+        auto end = diff.end();
 
 
         dim3 blockDim = dim3(32, 4, 4);
@@ -169,7 +171,7 @@ int main(int an, char **as)
         /* iteration loop */
         for (int it = 1; it <= ITMAX; it++) {
             difference_ab<<<gridDim, blockDim>>>(A_device, B_device, ptrdiff);
-            eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
+            eps = thrust::reduce(begin, end, 0.0, thrust::maximum<double>());
             
             function<<<gridDim, blockDim>>>(A_device, B_device);
 
