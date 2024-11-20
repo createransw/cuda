@@ -52,8 +52,9 @@ __global__ void difference_ab(double *A, const double *B, double* eps) {
     if ((i > 0) && (i < L - 1)) {
         if ((j > 0) && (j < L - 1)) {
             if ((k > 0) && (k < L - 1)) {
-                eps(i, j, k) = fabs(B(i, j, k) - A(i, j, k));
-                A(i, j, k) = B(i, j, k);
+                double tmp = B(i, j, k);
+                eps(i, j, k) = fabs(tmp - A(i, j, k));
+                A(i, j, k) = tmp;
             }
         }
     }
@@ -155,8 +156,6 @@ int main(int an, char **as)
         thrust::device_vector<double> diff(L * L * L);
         double *ptrdiff = thrust::raw_pointer_cast(&diff[0]);
         double eps = 0.0;
-        thrust::detail::normal_iterator<thrust::device_ptr<double>> begin = diff.begin();
-        thrust::detail::normal_iterator<thrust::device_ptr<double>> end = diff.end();
 
 
         dim3 blockDim = dim3(32, 4, 4);
@@ -171,7 +170,7 @@ int main(int an, char **as)
         /* iteration loop */
         for (int it = 1; it <= ITMAX; it++) {
             difference_ab<<<gridDim, blockDim>>>(A_device, B_device, ptrdiff);
-            eps = thrust::reduce(begin, end, 0.0, thrust::maximum<double>());
+            eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             
             function<<<gridDim, blockDim>>>(A_device, B_device);
 
