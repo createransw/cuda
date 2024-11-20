@@ -155,8 +155,8 @@ int main(int an, char **as)
         thrust::device_vector<double> diff(L * L * L);
         double *ptrdiff = thrust::raw_pointer_cast(&diff[0]);
         double eps = 0.0;
-        auto begin = diff.begin();
-        auto end = diff.end();
+        thrust::detail::normal_iterator<thrust::device_ptr<double>> begin = diff.begin();
+        thrust::detail::normal_iterator<thrust::device_ptr<double>> end = diff.end();
 
 
         dim3 blockDim = dim3(32, 4, 4);
