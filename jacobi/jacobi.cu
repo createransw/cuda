@@ -1,6 +1,5 @@
 /* Jacobi-3 program */
 
-#include <cmath>
 #include <ctime>
 #include <math.h>
 #include <cuda_runtime.h>
@@ -155,11 +154,12 @@ int main(int an, char **as)
 
         thrust::device_vector<double> diff(L * L * L);
         double *ptrdiff = thrust::raw_pointer_cast(&diff[0]);
+        double eps = 0.0;
 
 
-        dim3 blockDim = dim3(16, 8, 4);
+        dim3 blockDim = dim3(32, 4, 4);
         //int block = blockDim.x * blockDim.y * blockDim.z;
-        dim3 gridDim = dim3(L / 16 + 1, L / 8 + 1, L / 4 + 1);
+        dim3 gridDim = dim3(L / 32 + 1, L / 4 + 1, L / 4 + 1);
 
         cudaEvent_t startt, endt;
         cudaEventCreate(&startt);
@@ -169,7 +169,7 @@ int main(int an, char **as)
         /* iteration loop */
         for (int it = 1; it <= ITMAX; it++) {
             difference_ab<<<gridDim, blockDim>>>(A_device, B_device, ptrdiff);
-            double eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
+            eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             
             function<<<gridDim, blockDim>>>(A_device, B_device);
 
