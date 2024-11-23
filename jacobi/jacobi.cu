@@ -54,6 +54,7 @@ __global__ void difference_ab(double *A, const double *B, double *eps) {
         if ((j > 0) && (j < L - 1)) {
             if ((k > 0) && (k < L - 1)) {
                 eps(i, j, k) = fabs(B(i, j, k) - A(i, j, k));
+                A(i, j, k) = B(i, j, k);
             }
         }
     }
