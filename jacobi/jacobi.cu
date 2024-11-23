@@ -30,7 +30,7 @@
 double eps;
 double MAXEPS = 0.5;
 
-__global__ void function(const double *A, double *B) {
+__global__ void function(const double *A, double *B, double *eps) {
     int k = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
     int i = blockIdx.z * blockDim.z + threadIdx.z;
@@ -39,12 +39,13 @@ __global__ void function(const double *A, double *B) {
         if (j < L - 1) {
             if (k < L - 1) {
                 B(i, j, k) = (A(i - 1, j, k) + A(i, j - 1, k) + A(i, j, k - 1) + A(i, j, k + 1) + A(i, j + 1, k) + A(i + 1, j, k)) / 6.0;
+                eps(i, j, k) = fabs(B(i, j, k) - A(i, j, k));
             }
         }
     }
 }
 
-__global__ void difference_ab(double *A, const double *B, double* eps) {
+__global__ void difference_ab(double *A, const double *B, double *eps) {
     int k = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
     int i = blockIdx.z * blockDim.z + threadIdx.z;
@@ -168,10 +169,10 @@ int main(int an, char **as)
         cudaEventRecord(startt, 0);
         /* iteration loop */
         for (int it = 1; it <= ITMAX; it++) {
-            difference_ab<<<gridDim, blockDim>>>(A_device, B_device, ptrdiff);
+            function<<<gridDim, blockDim>>>(A_device, B_device, ptrdiff);
             eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             
-            function<<<gridDim, blockDim>>>(A_device, B_device);
+            SAFE_CALL(cudaMemcpy(A_device, B_device, size, cudaMemcpyDeviceToDevice));
 
             if (eps < MAXEPS)
                 break;
