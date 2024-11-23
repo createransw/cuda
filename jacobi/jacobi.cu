@@ -23,8 +23,8 @@
 #define eps(i, j, k) eps[((i) * L + (j)) * L + (k)]
 
 
-// #define L 885
-#define L 100
+#define L 885
+// #define L 100
 #define ITMAX 100
 
 double eps;
@@ -172,7 +172,6 @@ int main(int an, char **as)
         cudaEventRecord(startt, 0);
         /* iteration loop */
         for (int it = 1; it <= ITMAX - 1; it++) {
-            std::cout << eps << ' ';
             if (eps < MAXEPS)
                 break;
             function<<<gridDim, blockDim>>>(A_device, B_device, ptrdiff);
