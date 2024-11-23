@@ -36,8 +36,8 @@ __global__ void function(const double *A, double *B, double *eps) {
     int i = blockIdx.z * blockDim.z + threadIdx.z;
 
     if ((i > 0) && (i < L - 1)) {
-        if ((i > 0) && (j < L - 1)) {
-            if ((i > 0) && (k < L - 1)) {
+        if ((j > 0) && (j < L - 1)) {
+            if ((k > 0) && (k < L - 1)) {
                 B(i, j, k) = (A(i - 1, j, k) + A(i, j - 1, k) + A(i, j, k - 1) + A(i, j, k + 1) + A(i, j + 1, k) + A(i + 1, j, k)) / 6.0;
                 eps(i, j, k) = fabs(B(i, j, k) - A(i, j, k));
             }
@@ -51,8 +51,8 @@ __global__ void difference_ab(double *A, const double *B, double *eps) {
     int i = blockIdx.z * blockDim.z + threadIdx.z;
 
     if ((i > 0) && (i < L - 1)) {
-        if ((i > 0) && (j < L - 1)) {
-            if ((i > 0) && (k < L - 1)) {
+        if ((j > 0) && (j < L - 1)) {
+            if ((k > 0) && (k < L - 1)) {
                 eps(i, j, k) = fabs(B(i, j, k) - A(i, j, k));
                 A(i, j, k) = B(i, j, k);
             }
