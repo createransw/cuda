@@ -171,6 +171,7 @@ int main(int an, char **as)
         cudaEventRecord(startt, 0);
         /* iteration loop */
         for (int it = 1; it <= ITMAX - 1; it++) {
+            std::cout << eps;
             if (eps < MAXEPS)
                 break;
             function<<<gridDim, blockDim>>>(A_device, B_device, ptrdiff);
