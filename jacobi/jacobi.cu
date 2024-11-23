@@ -162,14 +162,15 @@ int main(int an, char **as)
         //int block = blockDim.x * blockDim.y * blockDim.z;
         dim3 gridDim = dim3(L / 32 + 1, L / 4 + 1, L / 4 + 1);
 
-        difference_ab<<<gridDim, blockDim>>>(A_device, B_device, ptrdiff);
-            eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
 
         cudaEvent_t startt, endt;
         cudaEventCreate(&startt);
         cudaEventCreate(&endt);
 
         cudaEventRecord(startt, 0);
+
+        difference_ab<<<gridDim, blockDim>>>(A_device, B_device, ptrdiff);
+            eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
         /* iteration loop */
         for (int it = 1; it <= ITMAX - 1; it++) {
             if (eps < MAXEPS)
