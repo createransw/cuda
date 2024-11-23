@@ -54,7 +54,6 @@ __global__ void difference_ab(double *A, const double *B, double *eps) {
         if ((j > 0) && (j < L - 1)) {
             if ((k > 0) && (k < L - 1)) {
                 eps(i, j, k) = fabs(B(i, j, k) - A(i, j, k));
-                A(i, j, k) = B(i, j, k);
             }
         }
     }
@@ -149,7 +148,7 @@ int main(int an, char **as)
 
         double *A_device, *B_device;
         SAFE_CALL(cudaMalloc((void**)&A_device, size));
-        SAFE_CALL(cudaMemcpy(A_device, A_host, size, cudaMemcpyHostToDevice));
+        SAFE_CALL(cudaMemcpy(A_device, B_host, size, cudaMemcpyHostToDevice));
         SAFE_CALL(cudaMalloc((void**)&B_device, size));
         SAFE_CALL(cudaMemcpy(B_device, B_host, size, cudaMemcpyHostToDevice));
 
