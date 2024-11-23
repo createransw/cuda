@@ -23,8 +23,8 @@
 #define eps(i, j, k) eps[((i) * L + (j)) * L + (k)]
 
 
-#define L 885
-// #define L 384
+// #define L 885
+#define L 100
 #define ITMAX 100
 
 double eps;
@@ -170,8 +170,9 @@ int main(int an, char **as)
         /* iteration loop */
         for (int it = 1; it <= ITMAX; it++) {
             function<<<gridDim, blockDim>>>(A_device, B_device, ptrdiff);
+            cudaDeviceSynchronize();
             eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
-            
+            cudaDeviceSynchronize();
             SAFE_CALL(cudaMemcpy(A_device, B_device, size, cudaMemcpyDeviceToDevice));
 
             std::cout << eps;
