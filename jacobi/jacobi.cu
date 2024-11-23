@@ -174,6 +174,7 @@ int main(int an, char **as)
             
             SAFE_CALL(cudaMemcpy(A_device, B_device, size, cudaMemcpyDeviceToDevice));
 
+            std::cout << '!';
             if (eps < MAXEPS)
                 break;
         }
