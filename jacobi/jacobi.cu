@@ -171,11 +171,12 @@ int main(int an, char **as)
         for (int it = 1; it <= ITMAX; it++) {
             function<<<gridDim, blockDim>>>(A_device, B_device, ptrdiff);
             eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
+            std::cout << eps;
             SAFE_CALL(cudaMemcpy(A_device, B_device, size, cudaMemcpyDeviceToDevice));
 
             std::cout << eps;
-            /*if (eps < MAXEPS)
-                break;*/
+            if (eps < MAXEPS)
+                break;
         }
         cudaEventRecord(endt, 0);
 
