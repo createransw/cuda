@@ -23,8 +23,8 @@
 #define eps(i, j, k) eps[((i) * L + (j)) * L + (k)]
 
 
-#define L 885
-// #define L 100
+// #define L 885
+#define L 200
 #define ITMAX 100
 
 double eps;
@@ -196,6 +196,7 @@ int main(int an, char **as)
     if (CPU && GPU) {
         std::cout << "cpu time = " << cpu_time << std::endl;
         std::cout << "gpu time = " << gpu_time * 0.001 <<  std::endl;
+        std::cout << "decrease = " << cpu_time / gpu_time << std::endl;
         std::cout << "maksimum deviation = " << dev(A, A_host) << std::endl;
     } else if (CPU) {
         std::cout << "cpu time = " << cpu_time << std::endl;
