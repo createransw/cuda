@@ -196,7 +196,7 @@ int main(int an, char **as)
     if (CPU && GPU) {
         std::cout << "cpu time = " << cpu_time << std::endl;
         std::cout << "gpu time = " << gpu_time * 0.001 <<  std::endl;
-        std::cout << "decrease = " << cpu_time / gpu_time << std::endl;
+        std::cout << "decrease = " << cpu_time / gpu_time * 1000<< std::endl;
         std::cout << "maksimum deviation = " << dev(A, A_host) << std::endl;
     } else if (CPU) {
         std::cout << "cpu time = " << cpu_time << std::endl;
