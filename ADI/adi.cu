@@ -194,8 +194,8 @@ int main(int argc, char *argv[])
 
 
             //double eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
-            if (eps < maxeps)
-                break;
+            /*if (eps < maxeps)
+                break;*/
         }
         SAFE_CALL(cudaEventRecord(endt, 0));
 
