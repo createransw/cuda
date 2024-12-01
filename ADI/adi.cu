@@ -159,14 +159,14 @@ int main(int argc, char *argv[])
         double *ptrdiff = thrust::raw_pointer_cast(&diff[0]);
 
 
-        dim3 blockDim_i = dim3(1, 32, 32);
-        dim3 gridDim_i = dim3(nx, ny / 32 + 1, nz / 32 + 1);
+        dim3 blockDim_k = dim3(1, 32, 32);
+        dim3 gridDim_k = dim3(nx, ny / 32 + 1, nz / 32 + 1);
 
         dim3 blockDim_j = dim3(32, 1, 32);
         dim3 gridDim_j = dim3(nx / 32 + 1, ny, nz / 32 + 1);
 
-        dim3 blockDim_k = dim3(32, 32, 1);
-        dim3 gridDim_k = dim3(nx / 32 + 1, ny / 32 + 1, nz);
+        dim3 blockDim_i = dim3(32, 32, 1);
+        dim3 gridDim_i = dim3(nx / 32 + 1, ny / 32 + 1, nz);
 
 
         cudaEvent_t startt, endt;
