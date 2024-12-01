@@ -45,8 +45,10 @@ __global__ void function(double *A, double *eps, char dim) {
     int i = blockIdx.z * blockDim.z + threadIdx.z;
 
     if (dim == 'i') {
-        if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0))
+        if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
+            do {}
             while (atomicAdd(&dim_count, 0) < i * gridDim.x * gridDim.y);
+        }
         __syncthreads();
         if ((i > 0) && (i < nx - 1))
             if ((j > 0) && (j < ny - 1))
@@ -56,8 +58,10 @@ __global__ void function(double *A, double *eps, char dim) {
     }
 
     if (dim == 'j') {
-        if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0))
+        if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
+            do {}
             while (atomicAdd(&dim_count, 0) < j * gridDim.x * gridDim.z);
+        }
         __syncthreads();
         if ((i > 0) && (i < nx - 1))
             if ((j > 0) && (j < ny - 1))
@@ -67,8 +71,10 @@ __global__ void function(double *A, double *eps, char dim) {
     }
 
     if (dim == 'k') {
-        if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0))
+        if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
+            do {}
             while (atomicAdd(&dim_count, 0) < k * gridDim.y * gridDim.z);
+        }
         __syncthreads();
         if ((i > 0) && (i < nx - 1))
             if ((j > 0) && (j < ny - 1))
@@ -178,7 +184,6 @@ int main(int argc, char *argv[])
         for (int it = 1; it <= itmax; it++) {
             set<<<1, 1>>>();
             function<<<gridDim_i, blockDim_i>>>(A_device, ptrdiff, 'i');
-            std::cout << "!";
             set<<<1, 1>>>();
             function<<<gridDim_j, blockDim_j>>>(A_device, ptrdiff, 'j');
             set<<<1, 1>>>();
