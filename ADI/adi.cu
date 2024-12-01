@@ -1,6 +1,7 @@
 /* ADI program */
 
 #include <ctime>
+#include <functional>
 #include <math.h>
 #include <stdlib.h>
 #include <cuda_runtime.h>
@@ -147,7 +148,7 @@ int main(int argc, char *argv[])
         SAFE_CALL(cudaEventCreate(&endt));
 
 
-        auto op = [](double a, double b) ->double { return (a + b) / 2; };
+        std::function<double(double, double)> op = [](double a, double b) { return (a + b) / 2; };
         thrust::equal_to<int> pred;
 
         SAFE_CALL(cudaEventRecord(startt, 0));
