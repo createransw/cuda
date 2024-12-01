@@ -34,6 +34,11 @@ double itmax = 1;
 void init(double *a);
 double dev(const double *A, const double *B);
 
+struct op : std::binary_function<double, double, double>
+{
+    double operator()(double a, double b) const { return (a + b) / 2; }
+};
+
 
 __global__ void function_i(double *A) {
 }
@@ -163,7 +168,7 @@ int main(int argc, char *argv[])
                     data.begin() + 1,
                     data.begin(),
                     pred,
-                    [](double a, double b) { return (a + b) / 2; }
+                    op
                     );
 
 
