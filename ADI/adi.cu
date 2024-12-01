@@ -22,9 +22,9 @@
 #define B(i, j, k) B[((i) * nx + (j)) * ny + (k)]
 #define eps(i, j, k) eps[((i) * nx + (j)) * ny + (k)]
 
-#define nx 31
-#define ny 31
-#define nz 31
+#define nx 100
+#define ny 100
+#define nz 100
         
 
 double maxeps = 0.01;
