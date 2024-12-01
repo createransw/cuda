@@ -197,11 +197,11 @@ int main(int argc, char *argv[])
             /*if (eps < maxeps)
                 break;*/
         }
-        std::cerr << 'L';
         SAFE_CALL(cudaEventRecord(endt, 0));
 
         SAFE_CALL(cudaEventSynchronize(endt));
         SAFE_CALL(cudaEventElapsedTime(&gpu_time, startt, endt));
+        std::cerr << 'L';
         SAFE_CALL(cudaEventDestroy(startt));
         SAFE_CALL(cudaEventDestroy(endt));
 
