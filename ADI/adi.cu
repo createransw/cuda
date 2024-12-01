@@ -45,7 +45,9 @@ __global__ void function(double *A, double *eps, char dim) {
     int i = blockIdx.z * blockDim.z + threadIdx.z;
 
     if (dim == 'i') {
-        while (atomicAdd(&dim_count, 0) < i * gridDim.y * gridDim.x);
+        if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0))
+            while (atomicAdd(&dim_count, 0) < i * gridDim.y * gridDim.x);
+        __syncthreads();
         if ((i > 0) && (i < nx - 1))
             if ((j > 0) && (j < ny - 1))
                 if ((k > 0) && (k < nz - 1))
@@ -54,7 +56,9 @@ __global__ void function(double *A, double *eps, char dim) {
     }
 
     if (dim == 'j') {
-        while (atomicAdd(&dim_count, 0) < j * gridDim.x * gridDim.z);
+        if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0))
+            while (atomicAdd(&dim_count, 0) < j * gridDim.x * gridDim.z);
+        __syncthreads();
         if ((i > 0) && (i < nx - 1))
             if ((j > 0) && (j < ny - 1))
                 if ((k > 0) && (k < nz - 1))
@@ -63,7 +67,9 @@ __global__ void function(double *A, double *eps, char dim) {
     }
 
     if (dim == 'k') {
-        while (atomicAdd(&dim_count, 0) < k * gridDim.x * gridDim.y);
+        if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0))
+            while (atomicAdd(&dim_count, 0) < k * gridDim.x * gridDim.y);
+        __syncthreads();
         if ((i > 0) && (i < nx - 1))
             if ((j > 0) && (j < ny - 1))
                 if ((k > 0) && (k < nz - 1)) {
