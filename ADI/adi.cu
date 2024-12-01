@@ -34,7 +34,7 @@ double itmax = 1;
 void init(double *a);
 double dev(const double *A, const double *B);
 
-struct op : std::binary_function<double, double, double>
+struct bin : std::binary_function<double, double, double>
 {
     double operator()(double a, double b) const { return (a + b) / 2; }
 };
@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
         SAFE_CALL(cudaEventCreate(&endt));
 
 
-        //std::function<double(double, double)> op = [](double a, double b) { return (a + b) / 2; };
+        bin op;
         thrust::equal_to<int> pred;
 
         SAFE_CALL(cudaEventRecord(startt, 0));
