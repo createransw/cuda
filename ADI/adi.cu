@@ -35,6 +35,10 @@ double dev(const double *A, const double *B);
 
 __device__ int dim_count = 0;
 
+__global__ void set() {
+    dim_count = 0;
+}
+
 __global__ void function(double *A, double *eps, char dim) {
     int k = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
@@ -50,7 +54,7 @@ __global__ void function(double *A, double *eps, char dim) {
     }
 
     if (dim == 'j') {
-        while (atomicAdd(&dim_count, 0) < i * gridDim.x * gridDim.z);
+        while (atomicAdd(&dim_count, 0) < j * gridDim.x * gridDim.z);
         if ((i > 0) && (i < nx - 1))
             if ((j > 0) && (j < ny - 1))
                 if ((k > 0) && (k < nz - 1))
@@ -59,7 +63,7 @@ __global__ void function(double *A, double *eps, char dim) {
     }
 
     if (dim == 'k') {
-        while (atomicAdd(&dim_count, 0) < i * gridDim.x * gridDim.y);
+        while (atomicAdd(&dim_count, 0) < k * gridDim.x * gridDim.y);
         if ((i > 0) && (i < nx - 1))
             if ((j > 0) && (j < ny - 1))
                 if ((k > 0) && (k < nz - 1)) {
@@ -166,11 +170,11 @@ int main(int argc, char *argv[])
 
         SAFE_CALL(cudaEventRecord(startt, 0));
         for (int it = 1; it <= itmax; it++) {
-            dim_count = 0;
+            set<<<1, 1>>>();
             function<<<gridDim_i, blockDim_i>>>(A_device, ptrdiff, 'i');
-            dim_count = 0;
+            set<<<1, 1>>>();
             function<<<gridDim_j, blockDim_j>>>(A_device, ptrdiff, 'j');
-            dim_count = 0;
+            set<<<1, 1>>>();
             function<<<gridDim_k, blockDim_k>>>(A_device, ptrdiff, 'k');
 
             double eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
