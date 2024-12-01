@@ -48,9 +48,9 @@ __global__ void function(double *A, double *eps, char dim) {
     if (dim == 'i') {
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
             while (atomicAdd(&dim_count, 0) < i * gridDim.x * gridDim.y);
-            printf("%d ", i);
         }
         __syncthreads();
+        printf("%d ", i);
         if ((i > 0) && (i < nx - 1))
             if ((j > 0) && (j < ny - 1))
                 if ((k > 0) && (k < nz - 1))
@@ -180,21 +180,12 @@ int main(int argc, char *argv[])
 
         SAFE_CALL(cudaEventRecord(startt, 0));
         for (int it = 1; it <= itmax; it++) {
-            std::cerr << "!";
             set<<<1, 1>>>();
-            cudaDeviceSynchronize();
             function<<<gridDim_i, blockDim_i>>>(A_device, ptrdiff, 'i');
-            cudaDeviceSynchronize();
-            std::cerr << ".";
             set<<<1, 1>>>();
-            cudaDeviceSynchronize();
             function<<<gridDim_j, blockDim_j>>>(A_device, ptrdiff, 'j');
-            cudaDeviceSynchronize();
-            std::cerr << "?";
             set<<<1, 1>>>();
-            cudaDeviceSynchronize();
             function<<<gridDim_k, blockDim_k>>>(A_device, ptrdiff, 'k');
-            std::cerr << it << ' ';
             cudaDeviceSynchronize();
 
 
