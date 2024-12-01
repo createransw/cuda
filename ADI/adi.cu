@@ -22,9 +22,9 @@
 #define B(i, j, k) B[((i) * nx + (j)) * ny + (k)]
 #define eps(i, j, k) eps[((i) * nx + (j)) * ny + (k)]
 
-#define nx 38
-#define ny 38
-#define nz 38
+#define nx 31
+#define ny 31
+#define nz 31
         
 
 double maxeps = 0.01;
@@ -45,7 +45,9 @@ __global__ void function(double *A, double *eps, char dim) {
     int i = blockIdx.z * blockDim.z + threadIdx.z;
 
     if (dim == 'i') {
-        while (atomicAdd(&dim_count, 0) < i * gridDim.x * gridDim.y);
+        if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
+            while (atomicAdd(&dim_count, 0) < i * gridDim.x * gridDim.y);
+        }
         __syncthreads();
         if ((i > 0) && (i < nx - 1))
             if ((j > 0) && (j < ny - 1))
@@ -55,7 +57,9 @@ __global__ void function(double *A, double *eps, char dim) {
     }
 
     if (dim == 'j') {
-        while (atomicAdd(&dim_count, 0) < j * gridDim.x * gridDim.z);
+        if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
+            while (atomicAdd(&dim_count, 0) < j * gridDim.x * gridDim.z);
+        }
         __syncthreads();
         if ((i > 0) && (i < nx - 1))
             if ((j > 0) && (j < ny - 1))
@@ -65,10 +69,9 @@ __global__ void function(double *A, double *eps, char dim) {
     }
 
     if (dim == 'k') {
-        /*if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
+        if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
             while (atomicAdd(&dim_count, 0) < k * gridDim.y * gridDim.z);
-        }*/
-        while (atomicAdd(&dim_count, 0) < k * gridDim.y * gridDim.z);
+        }
         __syncthreads();
         if ((i > 0) && (i < nx - 1))
             if ((j > 0) && (j < ny - 1))
