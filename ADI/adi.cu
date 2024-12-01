@@ -197,6 +197,7 @@ int main(int argc, char *argv[])
             /*if (eps < maxeps)
                 break;*/
         }
+        std::cerr << 'L';
         SAFE_CALL(cudaEventRecord(endt, 0));
 
         SAFE_CALL(cudaEventSynchronize(endt));
@@ -204,7 +205,6 @@ int main(int argc, char *argv[])
         SAFE_CALL(cudaEventDestroy(startt));
         SAFE_CALL(cudaEventDestroy(endt));
 
-        std::cerr << 'L';
         SAFE_CALL(cudaMemcpy(A_host, A_device, size, cudaMemcpyDeviceToHost));
 
         SAFE_CALL(cudaFree(A_device));
