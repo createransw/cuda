@@ -182,12 +182,17 @@ int main(int argc, char *argv[])
         for (int it = 1; it <= itmax; it++) {
             std::cerr << "!";
             set<<<1, 1>>>();
+            cudaDeviceSynchronize();
             function<<<gridDim_i, blockDim_i>>>(A_device, ptrdiff, 'i');
+            cudaDeviceSynchronize();
             std::cerr << ".";
             set<<<1, 1>>>();
+            cudaDeviceSynchronize();
             function<<<gridDim_j, blockDim_j>>>(A_device, ptrdiff, 'j');
+            cudaDeviceSynchronize();
             std::cerr << "?";
             set<<<1, 1>>>();
+            cudaDeviceSynchronize();
             function<<<gridDim_k, blockDim_k>>>(A_device, ptrdiff, 'k');
             std::cerr << it << ' ';
             cudaDeviceSynchronize();
