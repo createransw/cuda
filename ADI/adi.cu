@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
             std::cerr << "?";
             set<<<1, 1>>>();
             function<<<gridDim_k, blockDim_k>>>(A_device, ptrdiff, 'k');
-            std::cerr << "," << ' ';
+            std::cerr << it << ' ';
 
 
             //double eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
