@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
         SAFE_CALL(cudaEventCreate(&endt));
 
 
-        auto op = [](double a, double b) { return (a + b) / 2; };
+        auto op = [](double a, double b) ->double { return (a + b) / 2; };
         thrust::equal_to<int> pred;
 
         SAFE_CALL(cudaEventRecord(startt, 0));
