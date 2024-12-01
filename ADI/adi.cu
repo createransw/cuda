@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
             std::cerr << "," << ' ';
 
 
-            double eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
+            //double eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             if (eps < maxeps)
                 break;
         }
