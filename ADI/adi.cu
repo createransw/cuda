@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
         SAFE_CALL(cudaEventCreate(&endt));
 
 
-        std::function<double(double, double)> op = [](double a, double b) { return (a + b) / 2; };
+        //std::function<double(double, double)> op = [](double a, double b) { return (a + b) / 2; };
         thrust::equal_to<int> pred;
 
         SAFE_CALL(cudaEventRecord(startt, 0));
@@ -157,7 +157,14 @@ int main(int argc, char *argv[])
             set_groups<<<gridDim, blockDim>>>(ptrgroups);
 
 
-            thrust::inclusive_scan_by_key(groups.begin() + 1, groups.end(), data.begin() + 1, data.begin(), pred, op);
+            thrust::inclusive_scan_by_key(
+                    groups.begin() + 1,
+                    groups.end(),
+                    data.begin() + 1,
+                    data.begin(),
+                    pred,
+                    [](double a, double b) { return (a + b) / 2; }
+                    );
 
 
             double eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
