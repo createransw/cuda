@@ -53,7 +53,6 @@ __global__ void function(double *A, double *eps, char dim) {
             if ((j > 0) && (j < ny - 1))
                 if ((k > 0) && (k < nz - 1))
                     A(i, j, k) = (A(i-1, j, k) + A(i+1, j, k)) / 2;
-        __threadfence();
     }
 
     if (dim == 'j') {
@@ -65,7 +64,6 @@ __global__ void function(double *A, double *eps, char dim) {
             if ((j > 0) && (j < ny - 1))
                 if ((k > 0) && (k < nz - 1))
                     A(i, j, k) = (A(i, j-1, k) + A(i, j+1, k)) / 2; 
-        __threadfence();
     }
 
     if (dim == 'k') {
@@ -80,12 +78,13 @@ __global__ void function(double *A, double *eps, char dim) {
                     eps(i, j, k) = fabs(A(i, j, k) - tmp);
                     A(i, j, k) = tmp;
                 }
-        __threadfence();
     }
 
 
-    if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0))
+    if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
+        __threadfence();
         atomicAdd(&dim_count, 1);
+    }
 }
 
 
@@ -132,7 +131,6 @@ int main(int argc, char *argv[])
                         eps = Max(eps, tmp2);
                         A(i, j, k) = tmp1;
                     }
-            std:: cout << it << ' ';
 
             if (eps < maxeps)
                 break;
@@ -187,7 +185,6 @@ int main(int argc, char *argv[])
             set<<<1, 1>>>();
             function<<<gridDim_k, blockDim_k>>>(A_device, ptrdiff, 'k');
 
-            std:: cout << it << ' ';
 
             double eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             if (eps < maxeps)
