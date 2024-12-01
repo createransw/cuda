@@ -46,7 +46,7 @@ __global__ void function(double *A, double *eps, char dim) {
 
     if (dim == 'i') {
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0))
-            while (atomicAdd(&dim_count, 0) < i * gridDim.y * gridDim.x);
+            while (atomicAdd(&dim_count, 0) < i * gridDim.x * gridDim.y);
         __syncthreads();
         if ((i > 0) && (i < nx - 1))
             if ((j > 0) && (j < ny - 1))
@@ -68,7 +68,7 @@ __global__ void function(double *A, double *eps, char dim) {
 
     if (dim == 'k') {
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0))
-            while (atomicAdd(&dim_count, 0) < k * gridDim.x * gridDim.y);
+            while (atomicAdd(&dim_count, 0) < k * gridDim.y * gridDim.z);
         __syncthreads();
         if ((i > 0) && (i < nx - 1))
             if ((j > 0) && (j < ny - 1))
