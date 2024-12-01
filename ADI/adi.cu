@@ -198,9 +198,9 @@ int main(int argc, char *argv[])
                 break;*/
         }
         SAFE_CALL(cudaEventRecord(endt, 0));
-        std::cerr << 'L';
 
         SAFE_CALL(cudaEventSynchronize(endt));
+        std::cerr << 'L';
         SAFE_CALL(cudaEventElapsedTime(&gpu_time, startt, endt));
         SAFE_CALL(cudaEventDestroy(startt));
         SAFE_CALL(cudaEventDestroy(endt));
