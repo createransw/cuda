@@ -47,8 +47,8 @@ __global__ void function(double *A, double *eps, char dim) {
 
     if (dim == 'i') {
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
-            printf("%d ", i);
             while (atomicAdd(&dim_count, 0) < i * gridDim.x * gridDim.y);
+            printf("%d ", i);
         }
         __syncthreads();
         if ((i > 0) && (i < nx - 1))
