@@ -178,6 +178,7 @@ int main(int argc, char *argv[])
         for (int it = 1; it <= itmax; it++) {
             set<<<1, 1>>>();
             function<<<gridDim_i, blockDim_i>>>(A_device, ptrdiff, 'i');
+            std::cout << "!";
             set<<<1, 1>>>();
             function<<<gridDim_j, blockDim_j>>>(A_device, ptrdiff, 'j');
             set<<<1, 1>>>();
