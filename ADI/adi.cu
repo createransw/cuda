@@ -1,5 +1,6 @@
 /* ADI program */
 
+#include <__clang_cuda_builtin_vars.h>
 #include <ctime>
 #include <functional>
 #include <math.h>
@@ -29,42 +30,51 @@
         
 
 double maxeps = 0.01;
-double itmax = 1;
+double itmax = 100;
 
 void init(double *a);
 double dev(const double *A, const double *B);
 
-struct bin : std::binary_function<double, double, double>
-{
-    double operator()(double a, double b) const { return (a + b) / 2; }
-};
+__device__ int dim_count = 0;
 
-
-__global__ void function_i(double *A) {
-}
-
-__global__ void set_groups(int *B) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
+__global__ void function(double *A, double *eps, char dim) {
+    int k = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
-    int k = blockIdx.z * blockDim.z + threadIdx.z;
+    int i = blockIdx.z * blockDim.z + threadIdx.z;
 
-    int number = i * nx + j;
+    if (dim == 'i') {
+        while (atomicAdd(&dim_count, 0) < i * gridDim.y * gridDim.x);
+        if ((i > 0) && (i < nx - 1))
+            if ((j > 0) && (j < ny - 1))
+                if ((k > 0) && (k < nz - 1))
+                    A(i, j, k) = (A(i-1, j, k) + A(i+1, j, k)) / 2;
+        __threadfence();
+    }
 
-    if (k > 1)
-        B(i, j, k) = 2 * number + 2;
-    else
-        B(i, j, k) = 2 * number + 1;
-}
+    if (dim == 'j') {
+        while (atomicAdd(&dim_count, 0) < i * gridDim.x * gridDim.z);
+        if ((i > 0) && (i < nx - 1))
+            if ((j > 0) && (j < ny - 1))
+                if ((k > 0) && (k < nz - 1))
+                    A(i, j, k) = (A(i, j-1, k) + A(i, j+1, k)) / 2; 
+        __threadfence();
+    }
 
-__global__ void prepare(double *A) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    int j = blockIdx.y * blockDim.y + threadIdx.y;
-    int k = blockIdx.z * blockDim.z + threadIdx.z;
+    if (dim == 'k') {
+        while (atomicAdd(&dim_count, 0) < i * gridDim.x * gridDim.y);
+        if ((i > 0) && (i < nx - 1))
+            if ((j > 0) && (j < ny - 1))
+                if ((k > 0) && (k < nz - 1)) {
+                    double tmp = (A(i, j, k-1) + A(i, j, k+1)) / 2;
+                    eps(i, j, k) = fabs(A(i, j, k) - tmp);
+                    A(i, j, k) = tmp;
+                }
+        __threadfence();
+    }
 
-    if (k > 1)
-        return;
 
-    A(i, j, k) = 0;
+    if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0))
+        atomicAdd(&dim_count, 1);
 }
 
 
@@ -92,7 +102,7 @@ int main(int argc, char *argv[])
         clock_t startt = clock();
         for (int it = 1; it <= itmax; it++) {
             double eps = 0;        
-            /*for (int i = 1; i < nx - 1; i++)
+            for (int i = 1; i < nx - 1; i++)
                 for (int j = 1; j < ny - 1; j++)
                     for (int k = 1; k < nz - 1; k++)
                         A(i, j, k) = (A(i-1, j, k) + A(i+1, j, k)) / 2;
@@ -100,7 +110,7 @@ int main(int argc, char *argv[])
             for (int i = 1; i < nx - 1; i++)
                 for (int j = 1; j < ny - 1; j++)
                     for (int k = 1; k < nz - 1; k++)
-                        A(i, j, k) = (A(i, j-1, k) + A(i, j+1, k)) / 2; */
+                        A(i, j, k) = (A(i, j-1, k) + A(i, j+1, k)) / 2; 
 
             for (int i = 1; i < nx - 1; i++)
                 for (int j = 1; j < ny - 1; j++)
@@ -131,8 +141,9 @@ int main(int argc, char *argv[])
 
 
         init(A_host);
-        thrust::device_vector<double> data(nx * ny * nz);
-        double *A_device = thrust::raw_pointer_cast(&data[0]);
+
+        double *A_device;
+        SAFE_CALL(cudaMalloc((void**)&A_device, size));
         SAFE_CALL(cudaMemcpy(A_device, A_host, size, cudaMemcpyHostToDevice));
 
 
@@ -140,12 +151,14 @@ int main(int argc, char *argv[])
         double *ptrdiff = thrust::raw_pointer_cast(&diff[0]);
 
 
-        thrust::device_vector<int> groups(nx * ny * nz);
-        int *ptrgroups = thrust::raw_pointer_cast(&groups[0]);
+        dim3 blockDim_i = dim3(1, 32, 32);
+        dim3 gridDim_i = dim3(nx, ny / 32 + 1, nz / 32 + 1);
 
+        dim3 blockDim_j = dim3(32, 1, 32);
+        dim3 gridDim_j = dim3(nx / 32 + 1, ny, nz / 32 + 1);
 
-        dim3 blockDim = dim3(32, 8, 4);
-        dim3 gridDim = dim3(nx / 32 + 1, ny / 8 + 1, nz / 4 + 1);
+        dim3 blockDim_k = dim3(32, 32, 1);
+        dim3 gridDim_k = dim3(nx / 32 + 1, ny / 32 + 1, nz);
 
 
         cudaEvent_t startt, endt;
@@ -153,24 +166,14 @@ int main(int argc, char *argv[])
         SAFE_CALL(cudaEventCreate(&endt));
 
 
-        bin op;
-        thrust::equal_to<int> pred;
-
         SAFE_CALL(cudaEventRecord(startt, 0));
         for (int it = 1; it <= itmax; it++) {
-            prepare<<<gridDim, blockDim>>>(A_device);
-            set_groups<<<gridDim, blockDim>>>(ptrgroups);
-
-
-            thrust::inclusive_scan_by_key(
-                    groups.begin() + 1,
-                    groups.end(),
-                    data.begin() + 1,
-                    data.begin(),
-                    pred,
-                    op
-                    );
-
+            dim_count = 0;
+            function<<<gridDim_i, blockDim_i>>>(A_device, ptrdiff, 'i');
+            dim_count = 0;
+            function<<<gridDim_j, blockDim_j>>>(A_device, ptrdiff, 'j');
+            dim_count = 0;
+            function<<<gridDim_k, blockDim_k>>>(A_device, ptrdiff, 'k');
 
             double eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             if (eps < maxeps)
@@ -185,7 +188,7 @@ int main(int argc, char *argv[])
 
         SAFE_CALL(cudaMemcpy(A_host, A_device, size, cudaMemcpyDeviceToHost));
 
-        //SAFE_CALL(cudaFree(A_device));
+        SAFE_CALL(cudaFree(A_device));
     }
 
     if (CPU && GPU) {
