@@ -132,6 +132,7 @@ int main(int argc, char *argv[])
                         eps = Max(eps, tmp2);
                         A(i, j, k) = tmp1;
                     }
+            std:: cout << it << ' ';
 
             if (eps < maxeps)
                 break;
@@ -185,6 +186,8 @@ int main(int argc, char *argv[])
             function<<<gridDim_j, blockDim_j>>>(A_device, ptrdiff, 'j');
             set<<<1, 1>>>();
             function<<<gridDim_k, blockDim_k>>>(A_device, ptrdiff, 'k');
+
+            std:: cout << it << ' ';
 
             double eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             if (eps < maxeps)
