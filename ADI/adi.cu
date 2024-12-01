@@ -1,5 +1,6 @@
 /* ADI program */
 
+#include <__clang_cuda_builtin_vars.h>
 #include <ctime>
 #include <math.h>
 #include <stdlib.h>
@@ -25,48 +26,42 @@
 #define nx 38
 #define ny 38
 #define nz 38
-
+        
 
 double maxeps = 0.01;
-double itmax = 100;
+double itmax = 1;
 
 void init(double *a);
 double dev(const double *A, const double *B);
 
+
 __global__ void function_i(double *A) {
-    int k = blockIdx.x * blockDim.x + threadIdx.x;
-    int j = blockIdx.y * blockDim.y + threadIdx.y;
-    int i = blockIdx.z * blockDim.z + threadIdx.z;
-
-    if ((i >= 1) && (i < nx - 1))
-        if ((j >= 1) && (j < ny - 1))
-            if ((k >= 1) &&  (k < nz - 1))
-                A(i, j, k) = (A(i-1, j, k) + A(i+1, j, k)) / 2;
 }
 
-__global__ void function_j(double *A) {
-    int k = blockIdx.x * blockDim.x + threadIdx.x;
+__global__ void set_groups(int *B) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
-    int i = blockIdx.z * blockDim.z + threadIdx.z;
-    if ((i >= 1) && (i < nx - 1))
-        if ((j >= 1) && (j < ny - 1))
-            if ((k >= 1) && (k < nz - 1))
-                A(i, j, k) = (A(i, j-1, k) + A(i, j+1, k)) / 2;
+    int k = blockIdx.z * blockDim.z + threadIdx.z;
+
+    int number = i * nx + j;
+
+    if (k > 1)
+        B(i, j, k) = 2 * number + 2;
+    else
+        B(i, j, k) = 2 * number + 1;
 }
 
-__global__ void function_k(double *A, double *eps) {
-    int k = blockIdx.x * blockDim.x + threadIdx.x;
+__global__ void prepare(double *A) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
-    int i = blockIdx.z * blockDim.z + threadIdx.z;
-    if ((i >= 1) && (i < nx - 1))
-        if ((j >= 1) && (j < ny - 1))
-            if ((k >= 1) && (k < nz - 1))
-            {
-                double tmp1 = (A(i, j, k-1) + A(i, j, k+1)) / 2;
-                eps(i, j, k) = fabs(A(i, j, k) - tmp1);
-                A(i, j, k) = tmp1;
-            }
+    int k = blockIdx.z * blockDim.z + threadIdx.z;
+
+    if (k > 1)
+        return;
+
+    A(i, j, k) = 0;
 }
+
 
 int main(int argc, char *argv[])
 {
@@ -92,7 +87,7 @@ int main(int argc, char *argv[])
         clock_t startt = clock();
         for (int it = 1; it <= itmax; it++) {
             double eps = 0;        
-            for (int i = 1; i < nx - 1; i++)
+            /*for (int i = 1; i < nx - 1; i++)
                 for (int j = 1; j < ny - 1; j++)
                     for (int k = 1; k < nz - 1; k++)
                         A(i, j, k) = (A(i-1, j, k) + A(i+1, j, k)) / 2;
@@ -100,7 +95,7 @@ int main(int argc, char *argv[])
             for (int i = 1; i < nx - 1; i++)
                 for (int j = 1; j < ny - 1; j++)
                     for (int k = 1; k < nz - 1; k++)
-                        A(i, j, k) = (A(i, j-1, k) + A(i, j+1, k)) / 2;
+                        A(i, j, k) = (A(i, j-1, k) + A(i, j+1, k)) / 2; */
 
             for (int i = 1; i < nx - 1; i++)
                 for (int j = 1; j < ny - 1; j++)
@@ -129,30 +124,42 @@ int main(int argc, char *argv[])
         if (deviceCount < 1) exit(1);
         SAFE_CALL(cudaSetDevice(0));
 
-        init(A_host);
 
-        double *A_device;
-        SAFE_CALL(cudaMalloc((void**)&A_device, size));
+        init(A_host);
+        thrust::device_vector<double> data(nx * ny * nz);
+        double *A_device = thrust::raw_pointer_cast(&data[0]);
         SAFE_CALL(cudaMemcpy(A_device, A_host, size, cudaMemcpyHostToDevice));
+
 
         thrust::device_vector<double> diff(nx * ny * nz);
         double *ptrdiff = thrust::raw_pointer_cast(&diff[0]);
 
-        dim3 blockDim = dim3(8, 8, 8);
-        dim3 gridDim = dim3(nx / 8 + 1, ny / 8 + 1, nz / 8 + 1);
+
+        thrust::device_vector<int> groups(nx * ny * nz);
+        int *ptrgroups = thrust::raw_pointer_cast(&groups[0]);
+
+
+        dim3 blockDim = dim3(32, 8, 4);
+        dim3 gridDim = dim3(nx / 32 + 1, ny / 8 + 1, nz / 4 + 1);
+
 
         cudaEvent_t startt, endt;
         SAFE_CALL(cudaEventCreate(&startt));
         SAFE_CALL(cudaEventCreate(&endt));
 
+
+        auto op = [](double a, double b) { return (a + b) / 2; };
+        thrust::equal_to<int> pred;
+
         SAFE_CALL(cudaEventRecord(startt, 0));
         for (int it = 1; it <= itmax; it++) {
-            function_i<<<gridDim, blockDim>>>(A_device);
-            SAFE_CALL(cudaDeviceSynchronize());
-            function_j<<<gridDim, blockDim>>>(A_device);
-            SAFE_CALL(cudaDeviceSynchronize());
-            function_k<<<gridDim, blockDim>>>(A_device, ptrdiff);
-            SAFE_CALL(cudaDeviceSynchronize());
+            prepare<<<gridDim, blockDim>>>(A_device);
+            set_groups<<<gridDim, blockDim>>>(ptrgroups);
+
+
+            thrust::inclusive_scan_by_key(groups.begin() + 1, groups.end(), data.begin() + 1, data.begin(), pred, op);
+
+
             double eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             if (eps < maxeps)
                 break;
