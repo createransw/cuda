@@ -50,7 +50,7 @@ __global__ void function(double *A, double *eps, char dim) {
             while (atomicAdd(&dim_count, 0) < i * gridDim.x * gridDim.y);
         }
         __syncthreads();
-        if ((threadIdx.x == 0) && (threadIdx.y == 17))
+        if ((threadIdx.x == 3) && (threadIdx.y == 17))
             printf("%d ", i);
         if ((i > 0) && (i < nx - 1))
             if ((j > 0) && (j < ny - 1))
@@ -84,6 +84,7 @@ __global__ void function(double *A, double *eps, char dim) {
     }
 
 
+    __syncthreads();
     if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
         __threadfence();
         atomicAdd(&dim_count, 1);
