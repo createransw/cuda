@@ -96,7 +96,7 @@ __global__ void function(double *A, double *eps, char dim) {
             __threadfence();
             atomicAdd(&dim_k[gridDim.y][gridDim.z], 1);
             if (k  == nx - 1)
-                dim_j[gridDim.y][gridDim.z] = 0;
+                dim_k[gridDim.y][gridDim.z] = 0;
         }
     }
 }
