@@ -89,8 +89,6 @@ __global__ void function(double *A, double *eps, char dim) {
     if (dim == 'k') {
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
             while (atomicAdd(&dim_k[gridDim.y][gridDim.z], 0) < k);
-            if (k == 0)
-                printf("%d ", k);
         }
         __syncthreads();
         for (int l = 0; l < 8; ++l) {
