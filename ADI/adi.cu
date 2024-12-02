@@ -178,6 +178,9 @@ int main(int argc, char *argv[])
         dim3 blockDim_i = dim3(32, 32, 1);
         dim3 gridDim_i = dim3(nx / 32 + 1, ny / 32 + 1, nz);
 
+        int *dim_i_ptr; 
+        SAFE_CALL(cudaGetSymbolAddress((void**) &dim_i_ptr, dim_i));
+
 
         cudaEvent_t startt, endt;
         SAFE_CALL(cudaEventCreate(&startt));
@@ -188,7 +191,7 @@ int main(int argc, char *argv[])
         SAFE_CALL(cudaEventRecord(startt, 0));
         for (int it = 1; it <= itmax; it++) {
             std::cerr << "!";
-            SAFE_CALL(cudaMemset(dim_i, 0, sizeof(dim_i)));
+            SAFE_CALL(cudaMemset(dim_i_ptr, 0, sizeof(dim_i)));
             function<<<gridDim_i, blockDim_i>>>(A_device, ptrdiff, 'i');
 
             std::cerr << "!";
