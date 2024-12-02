@@ -48,19 +48,20 @@ __global__ void function(double *A, double *eps, char dim) {
             while (atomicAdd(&dim_i[blockIdx.x][blockIdx.y], 0) < i);
         }
         __syncthreads();
-        for (int l = 0; l < 8; ++l) {
-            int t = i * 8 + l;
-            if ((t > 0) && (t < nx - 1))
+        //for (int l = 0; l < 8; ++l) {
+            //int t = i * 8 + l;
+            //if ((t > 0) && (t < nx - 1))
+            if ((i > 0) && (i < nx - 1))
                 if ((j > 0) && (j < ny - 1))
                     if ((k > 0) && (k < nz - 1))
-                        A(t, j, k) = (A(t-1, j, k) + A(t+1, j, k)) / 2;
-        }
+                        A(i, j, k) = (A(i-1, j, k) + A(i+1, j, k)) / 2;
+        //}
 
         __syncthreads();
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
             __threadfence();
             atomicAdd(&dim_i[blockIdx.x][blockIdx.y], 1);
-            if (i  == nz / 8)
+            if (i  == nz - 1)
                 dim_i[blockIdx.x][blockIdx.y] = 0;
         }
     }
@@ -70,20 +71,18 @@ __global__ void function(double *A, double *eps, char dim) {
             while (atomicAdd(&dim_j[blockIdx.x][blockIdx.z], 0) < j);
         }
         __syncthreads();
-        for (int l = 0; l < 8; ++l) {
-            int t = j * 8 + l;
+        //for (int l = 0; l < 8; ++l) {
+            //int t = j * 8 + l;
             if ((i > 0) && (i < nx - 1))
-                if ((t > 0) && (t < ny - 1))
+                if ((j > 0) && (j < ny - 1))
                     if ((k > 0) && (k < nz - 1))
-                        A(i, t, k) = (A(i, t-1, k) + A(i, t+1, k)) / 2; 
-        }
+                        A(i, j, k) = (A(i, j-1, k) + A(i, j+1, k)) / 2; 
+        //}
         __syncthreads();
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
-            if (blockIdx.x == 3 && blockIdx.z == 2)
-                printf("%d ", j);
             __threadfence();
             atomicAdd(&dim_j[blockIdx.x][blockIdx.z], 1);
-            if (j  == ny / 8)
+            if (j  == ny - 1)
                 dim_j[blockIdx.x][blockIdx.z] = 0;
         }
     }
@@ -93,21 +92,21 @@ __global__ void function(double *A, double *eps, char dim) {
             while (atomicAdd(&dim_k[blockIdx.y][blockIdx.z], 0) < k);
         }
         __syncthreads();
-        for (int l = 0; l < 8; ++l) {
-            int t = k * 8 + l;
+        //for (int l = 0; l < 8; ++l) {
+            //int t = k * 8 + l;
             if ((i > 0) && (i < nx - 1))
                 if ((j > 0) && (j < ny - 1))
-                    if ((t > 0) && (t < nz - 1)) {
-                        double tmp = (A(i, j, t-1) + A(i, j, t+1)) / 2;
-                        eps(i, j, t) = fabs(A(i, j, t) - tmp);
-                        A(i, j, t) = tmp;
-                    }
+                    if ((k > 0) && (k < nz - 1)) {
+                        double tmp = (A(i, j, k-1) + A(i, j, k+1)) / 2;
+                        eps(i, j, k) = fabs(A(i, j, k) - tmp);
+                        A(i, j, k) = tmp;
+                    //}
         }
         __syncthreads();
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
             __threadfence();
             atomicAdd(&dim_k[blockIdx.y][blockIdx.z], 1);
-            if (k  == nx / 8)
+            if (k  == nx - 1)
                 dim_k[blockIdx.y][blockIdx.z] = 0;
         }
     }
@@ -188,13 +187,13 @@ int main(int argc, char *argv[])
 
 
         dim3 blockDim_k = dim3(1, 32, 32);
-        dim3 gridDim_k = dim3(nx / 8 + 1, ny / 32 + 1, nz / 32 + 1);
+        dim3 gridDim_k = dim3(nx, ny / 32 + 1, nz / 32 + 1);
 
         dim3 blockDim_j = dim3(32, 1, 32);
-        dim3 gridDim_j = dim3(nx / 32 + 1, ny / 8 + 1, nz / 32 + 1);
+        dim3 gridDim_j = dim3(nx / 32 + 1, ny, nz / 32 + 1);
 
         dim3 blockDim_i = dim3(32, 32, 1);
-        dim3 gridDim_i = dim3(nx / 32 + 1, ny / 32 + 1, nz / 8 + 1);
+        dim3 gridDim_i = dim3(nx / 32 + 1, ny / 32 + 1, nz);
 
 
         cudaEvent_t startt, endt;
