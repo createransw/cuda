@@ -79,7 +79,7 @@ __global__ void function(double *A, double *eps, char dim) {
         }
         __syncthreads();
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
-            if (blockIdx.x == 3 && blockIdx.z == 17)
+            if (blockIdx.x == 3 && blockIdx.z == 2)
                 printf("%d ", j);
             __threadfence();
             atomicAdd(&dim_j[blockIdx.x][blockIdx.z], 1);
