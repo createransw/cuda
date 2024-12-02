@@ -48,8 +48,6 @@ __global__ void function(double *A, double *eps, char dim) {
             while (atomicAdd(&dim_i[gridDim.x][gridDim.y], 0) < i);
         }
         __syncthreads();
-        if ((threadIdx.x == 3) && (threadIdx.y == 17))
-            printf("%d ", i);
         if ((i > 0) && (i < nx - 1))
             if ((j > 0) && (j < ny - 1))
                 if ((k > 0) && (k < nz - 1))
@@ -76,6 +74,8 @@ __global__ void function(double *A, double *eps, char dim) {
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
             __threadfence();
             atomicAdd(&dim_j[gridDim.x][gridDim.z], 1);
+            if (j  == ny - 1)
+                dim_j[gridDim.x][gridDim.z] = 0;
         }
     }
 
@@ -95,6 +95,8 @@ __global__ void function(double *A, double *eps, char dim) {
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
             __threadfence();
             atomicAdd(&dim_k[gridDim.y][gridDim.z], 1);
+            if (k  == nx - 1)
+                dim_j[gridDim.y][gridDim.z] = 0;
         }
     }
 }
@@ -182,13 +184,6 @@ int main(int argc, char *argv[])
         dim3 blockDim_i = dim3(32, 32, 1);
         dim3 gridDim_i = dim3(nx / 32 + 1, ny / 32 + 1, nz);
 
-        int *dim_i_ptr; 
-        SAFE_CALL(cudaGetSymbolAddress((void**) &dim_i_ptr, dim_i));
-        int *dim_j_ptr; 
-        SAFE_CALL(cudaGetSymbolAddress((void**) &dim_j_ptr, dim_j));
-        int *dim_k_ptr; 
-        SAFE_CALL(cudaGetSymbolAddress((void**) &dim_k_ptr, dim_i));
-
 
         cudaEvent_t startt, endt;
         SAFE_CALL(cudaEventCreate(&startt));
@@ -199,15 +194,12 @@ int main(int argc, char *argv[])
         SAFE_CALL(cudaEventRecord(startt, 0));
         for (int it = 1; it <= itmax; it++) {
             //std::cerr << "!";
-            SAFE_CALL(cudaMemset(dim_i_ptr, 0, (nx / 32 + 1) * (ny / 32 + 1) * sizeof(int)));
             function<<<gridDim_i, blockDim_i>>>(A_device, ptrdiff, 'i');
 
             //std::cerr << "!";
-            SAFE_CALL(cudaMemset(dim_j_ptr, 0, sizeof(dim_j)));
             function<<<gridDim_j, blockDim_j>>>(A_device, ptrdiff, 'j');
 
             //std::cerr << "!";
-            SAFE_CALL(cudaMemset(dim_k_ptr, 0, sizeof(dim_k)));
             function<<<gridDim_k, blockDim_k>>>(A_device, ptrdiff, 'k');
 
             //std::cerr << "!";
