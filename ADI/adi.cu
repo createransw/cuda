@@ -49,7 +49,7 @@ __global__ void function(double *A, double *eps, char dim) {
         }
         __syncthreads();
         if ((threadIdx.x == 3) && (threadIdx.y == 17))
-            printf("%d ", i);
+            printf("%d %d\n", i, dim_i[gridDim.x][gridDim.y]);
         if ((i > 0) && (i < nx - 1))
             if ((j > 0) && (j < ny - 1))
                 if ((k > 0) && (k < nz - 1))
