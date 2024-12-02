@@ -184,9 +184,9 @@ int main(int argc, char *argv[])
             std::cerr << "!";
             set<<<1, 1>>>();
             function<<<gridDim_i, blockDim_i>>>(A_device, ptrdiff, 'i');
-            eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             std::cerr << "!";
             set<<<1, 1>>>();
+            eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             function<<<gridDim_j, blockDim_j>>>(A_device, ptrdiff, 'j');
             std::cerr << "!";
             set<<<1, 1>>>();
