@@ -48,7 +48,6 @@ __global__ void function(double *A, double *eps, char dim) {
     if (dim == 'i') {
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
             while (atomicAdd(&dim_count, 0) < i * gridDim.x * gridDim.y);
-        printf("%d ", i);
         }
         __syncthreads();
         if ((i > 0) && (i < nx - 1))
@@ -60,6 +59,7 @@ __global__ void function(double *A, double *eps, char dim) {
     if (dim == 'j') {
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
             while (atomicAdd(&dim_count, 0) < j * gridDim.x * gridDim.z);
+        printf("%d ", j);
         }
         __syncthreads();
         if ((i > 0) && (i < nx - 1))
@@ -196,7 +196,6 @@ int main(int argc, char *argv[])
         SAFE_CALL(cudaEventRecord(endt, 0));
 
         SAFE_CALL(cudaEventSynchronize(endt));
-        std::cerr << 'L';
         SAFE_CALL(cudaEventElapsedTime(&gpu_time, startt, endt));
         SAFE_CALL(cudaEventDestroy(startt));
         SAFE_CALL(cudaEventDestroy(endt));
