@@ -60,7 +60,7 @@ __global__ void function(double *A, double *eps, char dim) {
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
             __threadfence();
             atomicAdd(&dim_i[gridDim.x][gridDim.y], 1);
-            if (i  == nz - 1)
+            if (i  == nz / 8)
                 dim_i[gridDim.x][gridDim.y] = 0;
         }
     }
@@ -81,7 +81,7 @@ __global__ void function(double *A, double *eps, char dim) {
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
             __threadfence();
             atomicAdd(&dim_j[gridDim.x][gridDim.z], 1);
-            if (j  == ny - 1)
+            if (j  == ny / 8)
                 dim_j[gridDim.x][gridDim.z] = 0;
         }
     }
@@ -105,7 +105,7 @@ __global__ void function(double *A, double *eps, char dim) {
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
             __threadfence();
             atomicAdd(&dim_k[gridDim.y][gridDim.z], 1);
-            if (k  == nx - 1)
+            if (k  == nx / 8)
                 dim_k[gridDim.y][gridDim.z] = 0;
         }
     }
