@@ -46,11 +46,10 @@ __global__ void function(double *A, double *eps, char dim) {
     if (dim == 'i') {
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
             while (atomicAdd(&dim_i[gridDim.x][gridDim.y], 0) < i);
-            printf("%d %d\n", i, dim_i[gridDim.x][gridDim.y]);
         }
         __syncthreads();
-        /*if ((threadIdx.x == 3) && (threadIdx.y == 17))
-            printf("%d ", i);*/
+        if ((threadIdx.x == 3) && (threadIdx.y == 17))
+            printf("%d ", i);
         if ((i > 0) && (i < nx - 1))
             if ((j > 0) && (j < ny - 1))
                 if ((k > 0) && (k < nz - 1))
@@ -198,6 +197,7 @@ int main(int argc, char *argv[])
         SAFE_CALL(cudaEventRecord(startt, 0));
         for (int it = 1; it <= itmax; it++) {
             //std::cerr << "!";
+            std::cerr << sizeof(dim_i);
             SAFE_CALL(cudaMemset(dim_i_ptr, 0, sizeof(dim_i)));
             function<<<gridDim_i, blockDim_i>>>(A_device, ptrdiff, 'i');
 
