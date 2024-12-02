@@ -23,9 +23,9 @@
 #define B(i, j, k) B[((i) * ny + (j)) * nx + (k)]
 #define eps(i, j, k) eps[((i) * ny + (j)) * nx + (k)]
 
-#define nx 384
-#define ny 384
-#define nz 384
+#define nx 420
+#define ny 420
+#define nz 420
         
 
 double maxeps = 0.01;
@@ -194,17 +194,10 @@ int main(int argc, char *argv[])
 
         SAFE_CALL(cudaEventRecord(startt, 0));
         for (int it = 1; it <= itmax; it++) {
-            //std::cerr << "!";
             function<<<gridDim_i, blockDim_i>>>(A_device, ptrdiff, 'i');
-
-            //std::cerr << "!";
             function<<<gridDim_j, blockDim_j>>>(A_device, ptrdiff, 'j');
-
-            //std::cerr << "!";
             function<<<gridDim_k, blockDim_k>>>(A_device, ptrdiff, 'k');
 
-            //std::cerr << "!";
-            //std::cerr << it << ' ';
 
             eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             if (eps < maxeps)
