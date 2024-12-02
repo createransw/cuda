@@ -188,7 +188,7 @@ int main(int argc, char *argv[])
         SAFE_CALL(cudaEventRecord(startt, 0));
         for (int it = 1; it <= itmax; it++) {
             std::cerr << "!";
-            SAFE_CALL(cudaMemset((void*) dim_i, 0, (nx / 32 + 1) * (ny / 32 + 1) * sizeof(int)));
+            SAFE_CALL(cudaMemset((void*) &dim_i[0][0], 0, (nx / 32 + 1) * (ny / 32 + 1) * sizeof(int)));
             function<<<gridDim_i, blockDim_i>>>(A_device, ptrdiff, 'i');
 
             std::cerr << "!";
