@@ -1,5 +1,6 @@
 /* ADI program */
 
+#include <__clang_cuda_builtin_vars.h>
 #include <cstdio>
 #include <ctime>
 #include <math.h>
@@ -23,9 +24,9 @@
 #define B(i, j, k) B[((i) * ny + (j)) * nx + (k)]
 #define eps(i, j, k) eps[((i) * ny + (j)) * nx + (k)]
 
-#define nx 384
-#define ny 384
-#define nz 384
+#define nx 31
+#define ny 31
+#define nz 31
         
 
 double maxeps = 0.01;
@@ -34,11 +35,9 @@ double itmax = 10;
 void init(double *a);
 double dev(const double *A, const double *B);
 
-__device__ int dim_count = 0;
-
-__global__ void set() {
-    dim_count = 0;
-}
+__device__ int dim_i[nx / 32 + 1][ny / 32 + 1];
+__device__ int dim_j[nx / 32 + 1][nz / 32 + 1];
+__device__ int dim_k[ny / 32 + 1][nz / 32 + 1];
 
 __global__ void function(double *A, double *eps, char dim) {
     int k = blockIdx.x * blockDim.x + threadIdx.x;
@@ -47,29 +46,39 @@ __global__ void function(double *A, double *eps, char dim) {
 
     if (dim == 'i') {
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
-            while (atomicAdd(&dim_count, 0) < i * gridDim.x * gridDim.y);
+            while (atomicAdd(&dim_i[gridDim.x][gridDim.y], 0) < i);
         }
         __syncthreads();
         if ((i > 0) && (i < nx - 1))
             if ((j > 0) && (j < ny - 1))
                 if ((k > 0) && (k < nz - 1))
                     A(i, j, k) = (A(i-1, j, k) + A(i+1, j, k)) / 2;
+        __syncthreads();
+        if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
+            __threadfence();
+            atomicAdd(&dim_i[gridDim.x][gridDim.y], 1);
+        }
     }
 
     if (dim == 'j') {
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
-            while (atomicAdd(&dim_count, 0) < j * gridDim.x * gridDim.z);
+            while (atomicAdd(&dim_j[gridDim.x][gridDim.z], 0) < j);
         }
         __syncthreads();
         if ((i > 0) && (i < nx - 1))
             if ((j > 0) && (j < ny - 1))
                 if ((k > 0) && (k < nz - 1))
                     A(i, j, k) = (A(i, j-1, k) + A(i, j+1, k)) / 2; 
+        __syncthreads();
+        if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
+            __threadfence();
+            atomicAdd(&dim_j[gridDim.x][gridDim.z], 1);
+        }
     }
 
     if (dim == 'k') {
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
-            while (atomicAdd(&dim_count, 0) < k * gridDim.y * gridDim.z);
+            while (atomicAdd(&dim_k[gridDim.y][gridDim.z], 0) < k);
         }
         __syncthreads();
         if ((i > 0) && (i < nx - 1))
@@ -79,13 +88,11 @@ __global__ void function(double *A, double *eps, char dim) {
                     eps(i, j, k) = fabs(A(i, j, k) - tmp);
                     A(i, j, k) = tmp;
                 }
-    }
-
-
-    __syncthreads();
-    if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
-        __threadfence();
-        atomicAdd(&dim_count, 1);
+        __syncthreads();
+        if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
+            __threadfence();
+            atomicAdd(&dim_k[gridDim.y][gridDim.z], 1);
+        }
     }
 }
 
@@ -182,17 +189,18 @@ int main(int argc, char *argv[])
         SAFE_CALL(cudaEventRecord(startt, 0));
         for (int it = 1; it <= itmax; it++) {
             std::cerr << "!";
-            set<<<1, 1>>>();
+            SAFE_CALL(cudaMemset((void*) *dim_i, 0, (nx / 32 + 1) * (ny / 32 + 1) * sizeof(int)));
             function<<<gridDim_i, blockDim_i>>>(A_device, ptrdiff, 'i');
-            cudaDeviceSynchronize();
-            std::cerr << "!";
-            set<<<1, 1>>>();
-            function<<<gridDim_j, blockDim_j>>>(A_device, ptrdiff, 'j');
-            std::cerr << "!";
-            set<<<1, 1>>>();
-            function<<<gridDim_k, blockDim_k>>>(A_device, ptrdiff, 'k');
-            std::cerr << "!";
 
+            std::cerr << "!";
+            SAFE_CALL(cudaMemset((void*) *dim_j, 0, (nx / 32 + 1) * (nz / 32 + 1) * sizeof(int)));
+            function<<<gridDim_j, blockDim_j>>>(A_device, ptrdiff, 'j');
+
+            std::cerr << "!";
+            SAFE_CALL(cudaMemset((void*) *dim_k, 0, (ny / 32 + 1) * (nz / 32 + 1) * sizeof(int)));
+            function<<<gridDim_k, blockDim_k>>>(A_device, ptrdiff, 'k');
+
+            std::cerr << "!";
             std::cerr << it << ' ';
 
             eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
