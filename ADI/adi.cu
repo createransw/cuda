@@ -177,13 +177,14 @@ int main(int argc, char *argv[])
         SAFE_CALL(cudaEventCreate(&startt));
         SAFE_CALL(cudaEventCreate(&endt));
 
+        double eps = 0;
 
         SAFE_CALL(cudaEventRecord(startt, 0));
         for (int it = 1; it <= itmax; it++) {
+            eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             std::cerr << "!";
             set<<<1, 1>>>();
             function<<<gridDim_i, blockDim_i>>>(A_device, ptrdiff, 'i');
-            cudaDeviceSynchronize();
             std::cerr << "!";
             set<<<1, 1>>>();
             function<<<gridDim_j, blockDim_j>>>(A_device, ptrdiff, 'j');
@@ -195,7 +196,7 @@ int main(int argc, char *argv[])
             std::cerr << it << ' ';
 
 
-            double eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
+            eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             if (eps < maxeps)
                 break;
         }
