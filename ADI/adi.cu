@@ -194,9 +194,9 @@ int main(int argc, char *argv[])
             std::cerr << it << ' ';
 
 
-            double eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
+            /*double eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             if (eps < maxeps)
-                break;
+                break;*/
         }
         SAFE_CALL(cudaEventRecord(endt, 0));
 
