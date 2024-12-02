@@ -29,7 +29,7 @@
         
 
 double maxeps = 0.01;
-double itmax = 10;
+double itmax = 100;
 
 void init(double *a);
 double dev(const double *A, const double *B);
@@ -48,14 +48,10 @@ __global__ void function(double *A, double *eps, char dim) {
             while (atomicAdd(&dim_i[blockIdx.x][blockIdx.y], 0) < i);
         }
         __syncthreads();
-        //for (int l = 0; l < 8; ++l) {
-            //int t = i * 8 + l;
-            //if ((t > 0) && (t < nx - 1))
-            if ((i > 0) && (i < nx - 1))
-                if ((j > 0) && (j < ny - 1))
-                    if ((k > 0) && (k < nz - 1))
-                        A(i, j, k) = (A(i-1, j, k) + A(i+1, j, k)) / 2;
-        //}
+        if ((i > 0) && (i < nx - 1))
+            if ((j > 0) && (j < ny - 1))
+                if ((k > 0) && (k < nz - 1))
+                    A(i, j, k) = (A(i-1, j, k) + A(i+1, j, k)) / 2;
 
         __syncthreads();
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
@@ -71,13 +67,10 @@ __global__ void function(double *A, double *eps, char dim) {
             while (atomicAdd(&dim_j[blockIdx.x][blockIdx.z], 0) < j);
         }
         __syncthreads();
-        //for (int l = 0; l < 8; ++l) {
-            //int t = j * 8 + l;
-            if ((i > 0) && (i < nx - 1))
-                if ((j > 0) && (j < ny - 1))
-                    if ((k > 0) && (k < nz - 1))
-                        A(i, j, k) = (A(i, j-1, k) + A(i, j+1, k)) / 2; 
-        //}
+        if ((i > 0) && (i < nx - 1))
+            if ((j > 0) && (j < ny - 1))
+                if ((k > 0) && (k < nz - 1))
+                    A(i, j, k) = (A(i, j-1, k) + A(i, j+1, k)) / 2; 
         __syncthreads();
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
             __threadfence();
@@ -92,15 +85,12 @@ __global__ void function(double *A, double *eps, char dim) {
             while (atomicAdd(&dim_k[blockIdx.y][blockIdx.z], 0) < k);
         }
         __syncthreads();
-        //for (int l = 0; l < 8; ++l) {
-            //int t = k * 8 + l;
-            if ((i > 0) && (i < nx - 1))
-                if ((j > 0) && (j < ny - 1))
-                    if ((k > 0) && (k < nz - 1)) {
-                        double tmp = (A(i, j, k-1) + A(i, j, k+1)) / 2;
-                        eps(i, j, k) = fabs(A(i, j, k) - tmp);
-                        A(i, j, k) = tmp;
-                    //}
+        if ((i > 0) && (i < nx - 1))
+            if ((j > 0) && (j < ny - 1))
+                if ((k > 0) && (k < nz - 1)) {
+                    double tmp = (A(i, j, k-1) + A(i, j, k+1)) / 2;
+                    eps(i, j, k) = fabs(A(i, j, k) - tmp);
+                    A(i, j, k) = tmp;
         }
         __syncthreads();
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
