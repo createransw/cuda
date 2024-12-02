@@ -59,6 +59,7 @@ __global__ void function(double *A, double *eps, char dim) {
     if (dim == 'j') {
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
             while (atomicAdd(&dim_count, 0) < j * gridDim.x * gridDim.z);
+            printf("%d ", j);
         }
         __syncthreads();
         if ((i > 0) && (i < nx - 1))
@@ -76,7 +77,7 @@ __global__ void function(double *A, double *eps, char dim) {
             if ((j > 0) && (j < ny - 1))
                 if ((k > 0) && (k < nz - 1)) {
                     double tmp = (A(i, j, k-1) + A(i, j, k+1)) / 2;
-                    //eps(i, j, k) = fabs(A(i, j, k) - tmp);
+                    eps(i, j, k) = fabs(A(i, j, k) - tmp);
                     A(i, j, k) = tmp;
                 }
     }
@@ -187,7 +188,6 @@ int main(int argc, char *argv[])
             std::cerr << "!";
             set<<<1, 1>>>();
             function<<<gridDim_j, blockDim_j>>>(A_device, ptrdiff, 'j');
-            eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             std::cerr << "!";
             set<<<1, 1>>>();
             function<<<gridDim_k, blockDim_k>>>(A_device, ptrdiff, 'k');
