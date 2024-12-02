@@ -199,14 +199,17 @@ int main(int argc, char *argv[])
             //std::cerr << "!";
             SAFE_CALL(cudaMemset(dim_i_ptr, 0, sizeof(dim_i)));
             function<<<gridDim_i, blockDim_i>>>(A_device, ptrdiff, 'i');
+            cudaDeviceSynchronize();
 
             //std::cerr << "!";
             SAFE_CALL(cudaMemset(dim_j_ptr, 0, sizeof(dim_j)));
             function<<<gridDim_j, blockDim_j>>>(A_device, ptrdiff, 'j');
+            cudaDeviceSynchronize();
 
             //std::cerr << "!";
             SAFE_CALL(cudaMemset(dim_k_ptr, 0, sizeof(dim_k)));
             function<<<gridDim_k, blockDim_k>>>(A_device, ptrdiff, 'k');
+            cudaDeviceSynchronize();
 
             //std::cerr << "!";
             //std::cerr << it << ' ';
