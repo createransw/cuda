@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
             function<<<gridDim_j, blockDim_j>>>(A_device, ptrdiff, 'j');
             std::cerr << "!";
             set<<<1, 1>>>();
-            function<<<gridDim_k, blockDim_k>>>(A_device, ptrdiff, 'k');
+            //function<<<gridDim_k, blockDim_k>>>(A_device, ptrdiff, 'k');
             std::cerr << "!";
 
             std::cerr << it << ' ';
