@@ -180,6 +180,10 @@ int main(int argc, char *argv[])
 
         int *dim_i_ptr; 
         SAFE_CALL(cudaGetSymbolAddress((void**) &dim_i_ptr, dim_i));
+        int *dim_j_ptr; 
+        SAFE_CALL(cudaGetSymbolAddress((void**) &dim_j_ptr, dim_j));
+        int *dim_k_ptr; 
+        SAFE_CALL(cudaGetSymbolAddress((void**) &dim_k_ptr, dim_i));
 
 
         cudaEvent_t startt, endt;
@@ -195,11 +199,11 @@ int main(int argc, char *argv[])
             function<<<gridDim_i, blockDim_i>>>(A_device, ptrdiff, 'i');
 
             std::cerr << "!";
-            SAFE_CALL(cudaMemset((void*) dim_j, 0, (nx / 32 + 1) * (nz / 32 + 1) * sizeof(int)));
+            SAFE_CALL(cudaMemset(dim_j_ptr, 0, sizeof(dim_j)));
             function<<<gridDim_j, blockDim_j>>>(A_device, ptrdiff, 'j');
 
             std::cerr << "!";
-            SAFE_CALL(cudaMemset((void*) dim_k, 0, (ny / 32 + 1) * (nz / 32 + 1) * sizeof(int)));
+            SAFE_CALL(cudaMemset(dim_k_ptr, 0, sizeof(dim_k)));
             function<<<gridDim_k, blockDim_k>>>(A_device, ptrdiff, 'k');
 
             std::cerr << "!";
