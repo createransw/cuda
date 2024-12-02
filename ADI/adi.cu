@@ -23,13 +23,13 @@
 #define B(i, j, k) B[((i) * nx + (j)) * ny + (k)]
 #define eps(i, j, k) eps[((i) * nx + (j)) * ny + (k)]
 
-#define nx 33
-#define ny 33
-#define nz 33
+#define nx 38
+#define ny 38
+#define nz 38
         
 
 double maxeps = 0.01;
-double itmax = 10;
+double itmax = 100;
 
 void init(double *a);
 double dev(const double *A, const double *B);
@@ -188,7 +188,6 @@ int main(int argc, char *argv[])
             function<<<gridDim_k, blockDim_k>>>(A_device, ptrdiff, 'k');
             cudaDeviceSynchronize();
 
-            std::cerr << it << ' ';
 
             double eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             if (eps < maxeps)
