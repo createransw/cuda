@@ -76,7 +76,7 @@ __global__ void function(double *A, double *eps, char dim) {
             if ((j > 0) && (j < ny - 1))
                 if ((k > 0) && (k < nz - 1)) {
                     double tmp = (A(i, j, k-1) + A(i, j, k+1)) / 2;
-                    eps(i, j, k) = fabs(A(i, j, k) - tmp);
+                    //eps(i, j, k) = fabs(A(i, j, k) - tmp);
                     A(i, j, k) = tmp;
                 }
     }
@@ -191,10 +191,9 @@ int main(int argc, char *argv[])
             set<<<1, 1>>>();
             function<<<gridDim_k, blockDim_k>>>(A_device, ptrdiff, 'k');
             std::cerr << "!";
-            cudaDeviceSynchronize();
 
             std::cerr << it << ' ';
-
+            eps = 100;
 
             eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             if (eps < maxeps)
