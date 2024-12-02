@@ -29,7 +29,7 @@
         
 
 double maxeps = 0.01;
-double itmax = 1;
+double itmax = 10;
 
 void init(double *a);
 double dev(const double *A, const double *B);
@@ -45,7 +45,7 @@ __global__ void function(double *A, double *eps, char dim) {
 
     if (dim == 'i') {
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
-            while (atomicAdd(&dim_i[gridDim.x][gridDim.y], 0) < i);
+            while (atomicAdd(&dim_i[blockIdx.x][blockIdx.y], 0) < i);
         }
         __syncthreads();
         for (int l = 0; l < 8; ++l) {
@@ -59,15 +59,15 @@ __global__ void function(double *A, double *eps, char dim) {
         __syncthreads();
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
             __threadfence();
-            atomicAdd(&dim_i[gridDim.x][gridDim.y], 1);
+            atomicAdd(&dim_i[blockIdx.x][blockIdx.y], 1);
             if (i  == nz / 8)
-                dim_i[gridDim.x][gridDim.y] = 0;
+                dim_i[blockIdx.x][blockIdx.y] = 0;
         }
     }
 
     if (dim == 'j') {
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
-            while (atomicAdd(&dim_j[gridDim.x][gridDim.z], 0) < j);
+            while (atomicAdd(&dim_j[blockIdx.x][blockIdx.z], 0) < j);
         }
         __syncthreads();
         for (int l = 0; l < 8; ++l) {
@@ -81,15 +81,15 @@ __global__ void function(double *A, double *eps, char dim) {
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
             printf("%d ", j);
             __threadfence();
-            atomicAdd(&dim_j[gridDim.x][gridDim.z], 1);
+            atomicAdd(&dim_j[blockIdx.x][blockIdx.z], 1);
             if (j  == ny / 8)
-                dim_j[gridDim.x][gridDim.z] = 0;
+                dim_j[blockIdx.x][blockIdx.z] = 0;
         }
     }
 
     if (dim == 'k') {
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
-            while (atomicAdd(&dim_k[gridDim.y][gridDim.z], 0) < k);
+            while (atomicAdd(&dim_k[blockIdx.y][blockIdx.z], 0) < k);
         }
         __syncthreads();
         for (int l = 0; l < 8; ++l) {
@@ -105,9 +105,9 @@ __global__ void function(double *A, double *eps, char dim) {
         __syncthreads();
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
             __threadfence();
-            atomicAdd(&dim_k[gridDim.y][gridDim.z], 1);
+            atomicAdd(&dim_k[blockIdx.y][blockIdx.z], 1);
             if (k  == nx / 8)
-                dim_k[gridDim.y][gridDim.z] = 0;
+                dim_k[blockIdx.y][blockIdx.z] = 0;
         }
     }
 }
