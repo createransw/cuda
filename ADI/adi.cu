@@ -29,7 +29,7 @@
         
 
 double maxeps = 0.01;
-double itmax = 100;
+double itmax = 1;
 
 void init(double *a);
 double dev(const double *A, const double *B);
@@ -64,6 +64,7 @@ __global__ void function(double *A, double *eps, char dim) {
     if (dim == 'j') {
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
             while (atomicAdd(&dim_j[gridDim.x][gridDim.z], 0) < j);
+            printf("%d ", j);
         }
         __syncthreads();
         if ((i > 0) && (i < nx - 1))
