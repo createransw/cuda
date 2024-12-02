@@ -58,6 +58,8 @@ __global__ void function(double *A, double *eps, char dim) {
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
             __threadfence();
             atomicAdd(&dim_i[gridDim.x][gridDim.y], 1);
+            if (i  == nz - 1)
+                dim_i[gridDim.x][gridDim.y] = 0;
         }
     }
 
