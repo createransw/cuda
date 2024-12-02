@@ -19,9 +19,9 @@
 
 #define Max(a, b) ((a) > (b) ? (a) : (b))
 
-#define A(i, j, k) A[((i) * nx + (j)) * ny + (k)]
-#define B(i, j, k) B[((i) * nx + (j)) * ny + (k)]
-#define eps(i, j, k) eps[((i) * nx + (j)) * ny + (k)]
+#define A(i, j, k) A[((i) * ny + (j)) * nx + (k)]
+#define B(i, j, k) B[((i) * ny + (j)) * nx + (k)]
+#define eps(i, j, k) eps[((i) * ny + (j)) * nx + (k)]
 
 #define nx 100
 #define ny 100
@@ -181,10 +181,6 @@ int main(int argc, char *argv[])
 
         SAFE_CALL(cudaEventRecord(startt, 0));
         for (int it = 1; it <= itmax; it++) {
-            set<<<1, 1>>>();
-            function<<<gridDim_k, blockDim_k>>>(A_device, ptrdiff, 'k');
-            eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
-            std::cerr << "!";
             std::cerr << "!";
             set<<<1, 1>>>();
             function<<<gridDim_i, blockDim_i>>>(A_device, ptrdiff, 'i');
