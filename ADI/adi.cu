@@ -23,9 +23,9 @@
 #define B(i, j, k) B[((i) * ny + (j)) * nx + (k)]
 #define eps(i, j, k) eps[((i) * ny + (j)) * nx + (k)]
 
-#define nx 100
-#define ny 100
-#define nz 100
+#define nx 384
+#define ny 384
+#define nz 384
         
 
 double maxeps = 0.01;
@@ -48,7 +48,6 @@ __global__ void function(double *A, double *eps, char dim) {
     if (dim == 'i') {
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
             while (atomicAdd(&dim_count, 0) < i * gridDim.x * gridDim.y);
-            printf("%d ", dim_count);
         }
         __syncthreads();
         if ((i > 0) && (i < nx - 1))
@@ -87,8 +86,6 @@ __global__ void function(double *A, double *eps, char dim) {
     if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
         __threadfence();
         atomicAdd(&dim_count, 1);
-        if (dim == 'i')
-            printf("%d. ", dim_count);
     }
 }
 
@@ -187,6 +184,7 @@ int main(int argc, char *argv[])
             std::cerr << "!";
             set<<<1, 1>>>();
             function<<<gridDim_i, blockDim_i>>>(A_device, ptrdiff, 'i');
+            cudaDeviceSynchronize();
             std::cerr << "!";
             set<<<1, 1>>>();
             function<<<gridDim_j, blockDim_j>>>(A_device, ptrdiff, 'j');
