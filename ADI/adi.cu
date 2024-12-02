@@ -85,6 +85,7 @@ __global__ void function(double *A, double *eps, char dim) {
 
     __syncthreads();
     if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
+        printf("%d. ", dim_count);
         __threadfence();
         atomicAdd(&dim_count, 1);
     }
