@@ -29,7 +29,7 @@
         
 
 double maxeps = 0.01;
-double itmax = 1;
+double itmax = 10;
 
 void init(double *a);
 double dev(const double *A, const double *B);
@@ -50,8 +50,6 @@ __global__ void function(double *A, double *eps, char dim) {
             while (atomicAdd(&dim_count, 0) < i * gridDim.x * gridDim.y);
         }
         __syncthreads();
-        if ((threadIdx.x == 3) && (threadIdx.y == 17))
-            printf("%d ", i);
         if ((i > 0) && (i < nx - 1))
             if ((j > 0) && (j < ny - 1))
                 if ((k > 0) && (k < nz - 1))
@@ -190,6 +188,7 @@ int main(int argc, char *argv[])
             function<<<gridDim_k, blockDim_k>>>(A_device, ptrdiff, 'k');
             cudaDeviceSynchronize();
 
+            std::cerr << it << ' ';
 
             //double eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             /*if (eps < maxeps)
