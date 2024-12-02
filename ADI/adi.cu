@@ -29,7 +29,7 @@
         
 
 double maxeps = 0.01;
-double itmax = 100;
+double itmax = 10;
 
 void init(double *a);
 double dev(const double *A, const double *B);
