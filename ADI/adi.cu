@@ -63,7 +63,8 @@ __global__ void function(double *A, double *eps, char dim) {
             __syncthreads();
             temp(threadIdx.x, threadIdx.y, threadIdx.z) += tmp / (1 << d);
         }
-        temp(threadIdx.x, threadIdx.y, threadIdx.z) += A(i + 1, j, k) / 2;
+        if ((i > 0) && (i < nx - 1))
+            temp(threadIdx.x, threadIdx.y, threadIdx.z) += A(i + 1, j, k) / 2;
 
 
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
