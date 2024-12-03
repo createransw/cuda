@@ -40,7 +40,7 @@ __device__ int dim_j[nx / 32 + 1][nz / 32 + 1];
 __device__ int dim_k[ny / 32 + 1][nz / 32 + 1];
 
 
-__device__ double val_i[nx][ny];
+__device__ double val_i[ny][nx];
 __device__ double val_j[nx][nz];
 __device__ double val_k[ny][nz];
 
