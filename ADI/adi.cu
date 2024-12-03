@@ -22,7 +22,7 @@
 #define A(i, j, k) A[((i) * ny + (j)) * nx + (k)]
 #define B(i, j, k) B[((i) * ny + (j)) * nx + (k)]
 #define eps(i, j, k) eps[((i) * ny + (j)) * nx + (k)]
-#define temp(i, j, k) eps[((i) * 8 + (j)) * 16 + (k)]
+#define temp(i, j, k) temp[((i) * 8 + (j)) * 16 + (k)]
 
 #define nx 31
 #define ny 31
