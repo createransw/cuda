@@ -22,38 +22,65 @@
 #define A(i, j, k) A[((i) * ny + (j)) * nx + (k)]
 #define B(i, j, k) B[((i) * ny + (j)) * nx + (k)]
 #define eps(i, j, k) eps[((i) * ny + (j)) * nx + (k)]
+#define temp(i, j, k) eps[((i) * 8 + (j)) * 16 + (k)]
 
-#define nx 420
-#define ny 420
-#define nz 420
+#define nx 31
+#define ny 31
+#define nz 31
         
 
 double maxeps = 0.01;
-double itmax = 100;
+double itmax = 1;
 
 void init(double *a);
 double dev(const double *A, const double *B);
 
-__device__ int dim_i[nx / 32 + 1][ny / 32 + 1];
+__device__ int dim_i[nx / 16 + 1][ny / 8 + 1];
 __device__ int dim_j[nx / 32 + 1][nz / 32 + 1];
 __device__ int dim_k[ny / 32 + 1][nz / 32 + 1];
+
+
+__device__ double val_i[nx][ny];
+__device__ double val_j[nx][nz];
+__device__ double val_k[ny][nz];
 
 __global__ void function(double *A, double *eps, char dim) {
     int k = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
     int i = blockIdx.z * blockDim.z + threadIdx.z;
 
+    extern __shared__ float temp[];
+
     if (dim == 'i') {
+        if (threadIdx.z == 0)
+            temp(threadIdx.x, threadIdx.y, threadIdx.z) = 0;
+        else
+            temp(threadIdx.x, threadIdx.y, threadIdx.z) = A(i, j, k) / 4;
+
+        for (int d = 1; d < blockDim.z; d <<= 1) {
+            __syncthreads();
+            float tmp = (threadIdx.z >= d) ? temp(threadIdx.x, threadIdx.y, threadIdx.z - d) : 0;
+            __syncthreads();
+            temp(threadIdx.x, threadIdx.y, threadIdx.z) += tmp / (1 << d);
+        }
+        temp(threadIdx.x, threadIdx.y, threadIdx.z) += A(i + 1, j, k) / 2;
+
+
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
             while (atomicAdd(&dim_i[blockIdx.x][blockIdx.y], 0) < i);
         }
         __syncthreads();
+
+
         if ((i > 0) && (i < nx - 1))
             if ((j > 0) && (j < ny - 1))
                 if ((k > 0) && (k < nz - 1))
-                    A(i, j, k) = (A(i-1, j, k) + A(i+1, j, k)) / 2;
-
+                   A(i, j, k) = temp(threadIdx.x, threadIdx.y, threadIdx.z) + val_i[j][k] / (1 << (threadIdx.z + 1));
         __syncthreads();
+
+
+        if (threadIdx.z == blockDim.z - 1)
+            val_i[j][k] = (i == nz - 1) ? 0 : A(i, j, k);
         if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
             __threadfence();
             atomicAdd(&dim_i[blockIdx.x][blockIdx.y], 1);
@@ -132,7 +159,7 @@ int main(int argc, char *argv[])
                     for (int k = 1; k < nz - 1; k++)
                         A(i, j, k) = (A(i-1, j, k) + A(i+1, j, k)) / 2;
 
-            for (int i = 1; i < nx - 1; i++)
+            /*for (int i = 1; i < nx - 1; i++)
                 for (int j = 1; j < ny - 1; j++)
                     for (int k = 1; k < nz - 1; k++)
                         A(i, j, k) = (A(i, j-1, k) + A(i, j+1, k)) / 2; 
@@ -148,7 +175,7 @@ int main(int argc, char *argv[])
                     }
 
             if (eps < maxeps)
-                break;
+                break;*/
         }
         clock_t endt = clock();
 
@@ -176,7 +203,7 @@ int main(int argc, char *argv[])
         double *ptrdiff = thrust::raw_pointer_cast(&diff[0]);
 
 
-        dim3 blockDim_k = dim3(1, 32, 32);
+        dim3 blockDim_k = dim3(16, 8, 8);
         dim3 gridDim_k = dim3(nx, ny / 32 + 1, nz / 32 + 1);
 
         dim3 blockDim_j = dim3(32, 1, 32);
@@ -195,13 +222,13 @@ int main(int argc, char *argv[])
         SAFE_CALL(cudaEventRecord(startt, 0));
         for (int it = 1; it <= itmax; it++) {
             function<<<gridDim_i, blockDim_i>>>(A_device, ptrdiff, 'i');
-            function<<<gridDim_j, blockDim_j>>>(A_device, ptrdiff, 'j');
+            /*function<<<gridDim_j, blockDim_j>>>(A_device, ptrdiff, 'j');
             function<<<gridDim_k, blockDim_k>>>(A_device, ptrdiff, 'k');
 
 
             eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             if (eps < maxeps)
-                break;
+                break;*/
         }
         SAFE_CALL(cudaEventRecord(endt, 0));
 
