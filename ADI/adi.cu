@@ -19,14 +19,15 @@
 
 #define Max(a, b) ((a) > (b) ? (a) : (b))
 
-#define A(i, j, k) A[((i) * ny + (j)) * nx + (k)]
-#define B(i, j, k) B[((i) * ny + (j)) * nx + (k)]
-#define eps(i, j, k) eps[((i) * ny + (j)) * nx + (k)]
+#define A(i, j, k) A[((i) * ny + (j)) * nz + (k)]
+#define A_host(i, j, k) A_host[((i) * ny + (j)) * nz + (k)]
+#define B(i, j, k) B[((i) * ny + (j)) * nz + (k)]
+#define eps(i, j, k) eps[((i) * ny + (j)) * nz + (k)]
 #define temp(i, j, k) temp[((i) * 8 + (j)) * 8 + (k)]
 
-#define nx 31
-#define ny 31
-#define nz 31
+#define nx 30
+#define ny 30
+#define nz 30
         
 
 double maxeps = 0.01;
@@ -59,6 +60,9 @@ __global__ void function_i(double *A) {
                 if ((k > 0) && (k < nz - 1))
                     temp(threadIdx.x, threadIdx.y, threadIdx.z) = A(i, j, k) / 4;
 
+    if (threadIdx.x == 3 && threadIdx.y == 5 && threadIdx.z == 4)
+        printf("%f ", A(i, j, k));
+
     for (int d = 1; d < blockDim.x; d <<= 1) {
         __syncthreads();
         float tmp = (threadIdx.x >= d) ? temp(threadIdx.x - d, threadIdx.y, threadIdx.z) : 0;
@@ -76,7 +80,6 @@ __global__ void function_i(double *A) {
     }
     __syncthreads();
 
-
     if ((i > 0) && (i < nx - 1))
         if ((j > 0) && (j < ny - 1))
             if ((k > 0) && (k < nz - 1))
@@ -86,8 +89,9 @@ __global__ void function_i(double *A) {
 
     if (threadIdx.x == blockDim.x - 1)
         if ((j > 0) && (j < ny - 1))
-            if ((k > 0) && (k < nz - 1))
+            if ((k > 0) && (k < nz - 1)) {
                 val_i[j][k] = (blockIdx.x == gridDim.x - 1) ? 0 : A(i, j, k);
+            }
 
     if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
         __threadfence();
@@ -228,6 +232,7 @@ int main(int argc, char *argv[])
     float cpu_time = 0;
     if (CPU) {
         init(A);
+        std::cout << A(3, 5, 4) << "?" << std::endl;
 
         clock_t startt = clock();
         for (int it = 1; it <= itmax; it++) {
@@ -261,7 +266,6 @@ int main(int argc, char *argv[])
     }
 
     double *A_host = (double*)malloc(size);
-
     float gpu_time = 0;
     if (GPU) {
         int deviceCount = 0;
@@ -271,6 +275,7 @@ int main(int argc, char *argv[])
 
 
         init(A_host);
+        std::cout << A_host(3, 5, 4) << "!" << std::endl;
 
         double *A_device;
         SAFE_CALL(cudaMalloc((void**)&A_device, size));
@@ -336,6 +341,7 @@ int main(int argc, char *argv[])
 
 void init(double *A)
 {
+    std::cerr << ".";
     int i, j, k;
     for (i = 0; i < nx; i++)
         for (j = 0; j < ny; j++)
