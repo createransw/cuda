@@ -87,7 +87,7 @@ __global__ void function_i(double *A) {
     if (threadIdx.x == blockDim.x - 1)
         if (j < ny)
             if (k < nz) {
-                val_i[j][k] = (blockIdx.x == gridDim.x - 1) ? A(0, j, k) * 2 : A(i, j, k);
+                val_i[j][k] = (blockIdx.x == gridDim.x - 1) ? A(0, j, k)  : A(i, j, k);
             }
 
     if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
