@@ -162,6 +162,9 @@ int main(int an, char **as)
         //int block = blockDim.x * blockDim.y * blockDim.z;
         dim3 gridDim = dim3(L / 32 + 1, L / 4 + 1, L / 4 + 1);
 
+       
+        bool flg = true;
+
 
         cudaEvent_t startt, endt;
         cudaEventCreate(&startt);
@@ -170,14 +173,18 @@ int main(int an, char **as)
         cudaEventRecord(startt, 0);
 
         difference_ab<<<gridDim, blockDim>>>(A_device, B_device, ptrdiff);
-            eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
+        flg = not flg;
+        eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
         /* iteration loop */
         for (int it = 1; it <= ITMAX - 1; it++) {
             if (eps < MAXEPS)
                 break;
+            if (flg)
             function<<<gridDim, blockDim>>>(A_device, B_device, ptrdiff);
+            else 
+                function<<<gridDim, blockDim>>>(B_device, A_device, ptrdiff);
+            flg = not flg;
             eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
-            SAFE_CALL(cudaMemcpy(A_device, B_device, size, cudaMemcpyDeviceToDevice));
         }
         cudaEventRecord(endt, 0);
 
@@ -186,7 +193,10 @@ int main(int an, char **as)
         cudaEventDestroy(startt);
         cudaEventDestroy(endt);
 
-        SAFE_CALL(cudaMemcpy(A_host, A_device, size, cudaMemcpyDeviceToHost));
+        if (flg)
+            SAFE_CALL(cudaMemcpy(A_host, A_device, size, cudaMemcpyDeviceToHost));
+        else
+            SAFE_CALL(cudaMemcpy(A_host, B_device, size, cudaMemcpyDeviceToHost));
 
         SAFE_CALL(cudaFree(A_device));
         SAFE_CALL(cudaFree(B_device));
