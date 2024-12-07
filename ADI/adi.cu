@@ -25,13 +25,13 @@
 #define eps(i, j, k) eps[((i) * ny + (j)) * nz + (k)]
 #define temp(i, j, k) temp[((i) * 8 + (j)) * 8 + (k)]
 
-#define nx 30
-#define ny 30
-#define nz 30
+#define nx 800
+#define ny 800
+#define nz 800
         
 
 double maxeps = 0.01;
-double itmax = 1;
+double itmax = 100;
 
 void init(double *a);
 double dev(const double *A, const double *B);
@@ -52,26 +52,23 @@ __global__ void function_i(double *A) {
 
     extern __shared__ float temp[];
 
-    if (threadIdx.x == 0)
+    if ((threadIdx.x == 0) || (i == 1))
         temp(threadIdx.x, threadIdx.y, threadIdx.z) = 0;
     else
-        if ((i > 0) && (i < nx - 1))
-            if ((j > 0) && (j < ny - 1))
-                if ((k > 0) && (k < nz - 1))
+        if (i < nx)
+            if (j < ny)
+                if (k < nz)
                     temp(threadIdx.x, threadIdx.y, threadIdx.z) = A(i, j, k) / 4;
-
-    if (threadIdx.x == 3 && threadIdx.y == 5 && threadIdx.z == 4)
-        printf("%f ", A(i, j, k));
 
     for (int d = 1; d < blockDim.x; d <<= 1) {
         __syncthreads();
-        float tmp = (threadIdx.x >= d) ? temp(threadIdx.x - d, threadIdx.y, threadIdx.z) : 0;
+        double tmp = (threadIdx.x >= d) ? temp(threadIdx.x - d, threadIdx.y, threadIdx.z) : 0;
         __syncthreads();
-        temp(threadIdx.x, threadIdx.y, threadIdx.z) += tmp / (1 << d);
+        temp(threadIdx.x, threadIdx.y, threadIdx.z) += (tmp / (1 << d));
     }
-    if ((i > 0) && (i < nx - 1))
-        if ((j > 0) && (j < ny - 1))
-            if ((k > 0) && (k < nz - 1))
+    if (i < nx - 1)
+        if (j < ny)
+            if (k < nz)
                 temp(threadIdx.x, threadIdx.y, threadIdx.z) += A(i + 1, j, k) / 2;
 
 
@@ -88,9 +85,9 @@ __global__ void function_i(double *A) {
 
 
     if (threadIdx.x == blockDim.x - 1)
-        if ((j > 0) && (j < ny - 1))
-            if ((k > 0) && (k < nz - 1)) {
-                val_i[j][k] = (blockIdx.x == gridDim.x - 1) ? 0 : A(i, j, k);
+        if (j < ny)
+            if (k < nz) {
+                val_i[j][k] = (blockIdx.x == gridDim.x - 1) ? A(0, j, k) * 2 : A(i, j, k);
             }
 
     if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
@@ -211,6 +208,15 @@ __global__ void function_k(double *A, double *eps) {
     } 
 }
 
+__global__ void init_i(double *A) {
+    int j = blockIdx.y * blockDim.y + threadIdx.y;
+    int k = blockIdx.z * blockDim.z + threadIdx.z;
+
+    if (j < ny)
+        if (k < nz) 
+            val_i[j][k] = (10.0 * j / (ny - 1) + 10.0 * k / (nz - 1)) * 2;
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -232,7 +238,6 @@ int main(int argc, char *argv[])
     float cpu_time = 0;
     if (CPU) {
         init(A);
-        std::cout << A(3, 5, 4) << "?" << std::endl;
 
         clock_t startt = clock();
         for (int it = 1; it <= itmax; it++) {
@@ -275,7 +280,6 @@ int main(int argc, char *argv[])
 
 
         init(A_host);
-        std::cout << A_host(3, 5, 4) << "!" << std::endl;
 
         double *A_device;
         SAFE_CALL(cudaMalloc((void**)&A_device, size));
@@ -290,6 +294,8 @@ int main(int argc, char *argv[])
         dim3 gridDim = dim3(nx / 16 + 1, ny / 8 + 1, nz / 8 + 1);
 
         int block_size = 16 * 8 * 8 * sizeof(double);
+
+        init_i<<<gridDim, blockDim>>>(A_device);
 
 
         cudaEvent_t startt, endt;
@@ -341,7 +347,6 @@ int main(int argc, char *argv[])
 
 void init(double *A)
 {
-    std::cerr << ".";
     int i, j, k;
     for (i = 0; i < nx; i++)
         for (j = 0; j < ny; j++)
@@ -355,6 +360,14 @@ void init(double *A)
 double dev(const double *A, const double *B) {
     double delta = 0.0;
     int count = 0;
+    /*for (int i = 0; i < nx; i++) {
+        for (int j = 0; j < ny; j++)
+            std::cout << A(i, j, 1) << ' ';
+        std::cout << "\t\t\t";
+        for (int j = 0; j < ny; j++)
+            std::cout << B(i, j, 1) << ' ';
+        std::cout << std::endl;
+    }*/
     for (int i = 1; i < nx - 1; i++)
         for (int j = 1; j < ny - 1; j++)
             for (int k = 1; k < nz - 1; k++)
