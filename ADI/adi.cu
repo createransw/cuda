@@ -251,6 +251,7 @@ void init(double *A)
 double dev(const double *A, const double *B) {
     double delta = 0.0;
     int count = 0;
+    std::cout << std::endl;
     for (int i = 0; i < nx; i++) {
         for (int j = 0; j < ny; j++)
             std::cout << A(i, j, 1) << ' ';
