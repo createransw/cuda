@@ -327,8 +327,8 @@ int main(int argc, char *argv[])
         SAFE_CALL(cudaEventRecord(startt, 0));
         for (int it = 1; it <= itmax; it++) {
             //function_i<<<gridDim, blockDim, block_size>>>(A_device);
-            function_j<<<gridDim, blockDim, block_size>>>(A_device);
-            //function_k<<<gridDim, blockDim, block_size>>>(A_device, ptrdiff);
+            //function_j<<<gridDim, blockDim, block_size>>>(A_device);
+            function_k<<<gridDim, blockDim, block_size>>>(A_device, ptrdiff);
 
 
             /*eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
