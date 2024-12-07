@@ -251,14 +251,14 @@ void init(double *A)
 double dev(const double *A, const double *B) {
     double delta = 0.0;
     int count = 0;
-    /*for (int i = 0; i < nx; i++) {
+    for (int i = 0; i < nx; i++) {
         for (int j = 0; j < ny; j++)
             std::cout << A(i, j, 1) << ' ';
         std::cout << "\t\t\t";
         for (int j = 0; j < ny; j++)
             std::cout << B(i, j, 1) << ' ';
         std::cout << std::endl;
-    }*/
+    }
     for (int i = 1; i < nx - 1; i++)
         for (int j = 1; j < ny - 1; j++)
             for (int k = 1; k < nz - 1; k++)
