@@ -260,15 +260,15 @@ int main(int argc, char *argv[])
         clock_t startt = clock();
         for (int it = 1; it <= itmax; it++) {
             double eps = 0;        
-            for (int i = 1; i < nx - 1; i++)
+            /*for (int i = 1; i < nx - 1; i++)
                 for (int j = 1; j < ny - 1; j++)
                     for (int k = 1; k < nz - 1; k++)
-                        A(i, j, k) = (A(i-1, j, k) + A(i+1, j, k)) / 2;
+                        A(i, j, k) = (A(i-1, j, k) + A(i+1, j, k)) / 2;*/
 
             /*for (int i = 1; i < nx - 1; i++)
                 for (int j = 1; j < ny - 1; j++)
                     for (int k = 1; k < nz - 1; k++)
-                        A(i, j, k) = (A(i, j-1, k) + A(i, j+1, k)) / 2; 
+                        A(i, j, k) = (A(i, j-1, k) + A(i, j+1, k)) / 2; */
 
             for (int i = 1; i < nx - 1; i++)
                 for (int j = 1; j < ny - 1; j++)
@@ -281,7 +281,7 @@ int main(int argc, char *argv[])
                     }
 
             if (eps < maxeps)
-                break;*/
+                break;
         }
         clock_t endt = clock();
 
