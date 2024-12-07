@@ -25,9 +25,9 @@
 #define eps(i, j, k) eps[((i) * ny + (j)) * nz + (k)]
 #define temp(i, j, k) temp[((i) * 8 + (j)) * 8 + (k)]
 
-#define nx 17
-#define ny 17
-#define nz 17
+#define nx 10
+#define ny 10
+#define nz 10
         
 
 double maxeps = 0.01;
@@ -46,13 +46,13 @@ __device__ double val_j[nx][nz];
 __device__ double val_k[nx][ny];
 
 __global__ void function_i(double *A) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    int i = blockIdx.x * blockDim.x + threadIdx.x + 1;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
     int k = blockIdx.z * blockDim.z + threadIdx.z;
 
     extern __shared__ float temp[];
 
-    if ((threadIdx.x == 0) || (i == 1))
+    if (threadIdx.x == 0)
         temp(threadIdx.x, threadIdx.y, threadIdx.z) = 0;
     else
         if (i < nx)
@@ -260,15 +260,15 @@ int main(int argc, char *argv[])
         clock_t startt = clock();
         for (int it = 1; it <= itmax; it++) {
             double eps = 0;        
-            /*for (int i = 1; i < nx - 1; i++)
+            for (int i = 1; i < nx - 1; i++)
                 for (int j = 1; j < ny - 1; j++)
                     for (int k = 1; k < nz - 1; k++)
                         A(i, j, k) = (A(i-1, j, k) + A(i+1, j, k)) / 2;
 
-            for (int i = 1; i < nx - 1; i++)
+            /*for (int i = 1; i < nx - 1; i++)
                 for (int j = 1; j < ny - 1; j++)
                     for (int k = 1; k < nz - 1; k++)
-                        A(i, j, k) = (A(i, j-1, k) + A(i, j+1, k)) / 2; */
+                        A(i, j, k) = (A(i, j-1, k) + A(i, j+1, k)) / 2; 
 
             for (int i = 1; i < nx - 1; i++)
                 for (int j = 1; j < ny - 1; j++)
@@ -281,7 +281,7 @@ int main(int argc, char *argv[])
                     }
 
             if (eps < maxeps)
-                break;
+                break;*/
         }
         clock_t endt = clock();
 
@@ -326,14 +326,14 @@ int main(int argc, char *argv[])
 
         SAFE_CALL(cudaEventRecord(startt, 0));
         for (int it = 1; it <= itmax; it++) {
-            //function_i<<<gridDim, blockDim, block_size>>>(A_device);
+            function_i<<<gridDim, blockDim, block_size>>>(A_device);
             //function_j<<<gridDim, blockDim, block_size>>>(A_device);
-            function_k<<<gridDim, blockDim, block_size>>>(A_device, ptrdiff);
+            /*function_k<<<gridDim, blockDim, block_size>>>(A_device, ptrdiff);
 
 
             eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             if (eps < maxeps)
-                break;
+                break;*/
         }
         SAFE_CALL(cudaEventRecord(endt, 0));
 
