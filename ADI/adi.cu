@@ -25,13 +25,13 @@
 #define eps(i, j, k) eps[((i) * ny + (j)) * nz + (k)]
 #define temp(i, j, k) temp[((i) * 8 + (j)) * 8 + (k)]
 
-#define nx 6
-#define ny 6
-#define nz 6
+#define nx 500
+#define ny 500
+#define nz 500
         
 
 double maxeps = 0.01;
-double itmax = 10;
+double itmax = 100;
 
 void init(double *a);
 double dev(const double *A, const double *B);
