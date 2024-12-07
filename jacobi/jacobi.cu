@@ -24,7 +24,7 @@
 
 
 // #define L 885
-#define L 800
+#define L 700
 #define ITMAX 100
 
 double eps;
@@ -180,7 +180,7 @@ int main(int an, char **as)
             if (eps < MAXEPS)
                 break;
             if (flg)
-            function<<<gridDim, blockDim>>>(A_device, B_device, ptrdiff);
+                function<<<gridDim, blockDim>>>(A_device, B_device, ptrdiff);
             else 
                 function<<<gridDim, blockDim>>>(B_device, A_device, ptrdiff);
             flg = not flg;
