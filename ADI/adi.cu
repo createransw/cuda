@@ -25,9 +25,9 @@
 #define eps(i, j, k) eps[((i) * ny + (j)) * nz + (k)]
 #define temp(i, j, k) temp[((i) * 8 + (j)) * 8 + (k)]
 
-#define nx 800
-#define ny 800
-#define nz 800
+#define nx 15
+#define ny 7
+#define nz 7
         
 
 double maxeps = 0.01;
@@ -41,7 +41,7 @@ __device__ int dim_j[nx / 16 + 1][nz / 8 + 1];
 __device__ int dim_k[nx / 16 + 1][ny / 8 + 1];
 
 
-__device__ double val_i[ny][nx];
+__device__ double val_i[ny][nz];
 __device__ double val_j[nx][nz];
 __device__ double val_k[nx][ny];
 
@@ -98,115 +98,6 @@ __global__ void function_i(double *A) {
     } 
 }
 
-__global__ void function_j(double *A) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    int j = blockIdx.y * blockDim.y + threadIdx.y;
-    int k = blockIdx.z * blockDim.z + threadIdx.z;
-
-    extern __shared__ float temp[];
-
-    if (threadIdx.y == 0)
-        temp(threadIdx.x, threadIdx.y, threadIdx.z) = 0;
-    else
-        if ((i > 0) && (i < nx - 1))
-            if ((j > 0) && (j < ny - 1))
-                if ((k > 0) && (k < nz - 1))
-                    temp(threadIdx.x, threadIdx.y, threadIdx.z) = A(i, j, k) / 4;
-
-    for (int d = 1; d < blockDim.y; d <<= 1) {
-        __syncthreads();
-        float tmp = (threadIdx.y >= d) ? temp(threadIdx.x, threadIdx.y - d, threadIdx.z) : 0;
-        __syncthreads();
-        temp(threadIdx.x, threadIdx.y, threadIdx.z) += tmp / (1 << d);
-    }
-    if ((i > 0) && (i < nx - 1))
-        if ((j > 0) && (j < ny - 1))
-            if ((k > 0) && (k < nz - 1))
-                temp(threadIdx.x, threadIdx.y, threadIdx.z) += A(i, j + 1, k) / 2;
-
-
-    if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
-        while (atomicAdd(&dim_j[blockIdx.x][blockIdx.z], 0) < blockIdx.y);
-    }
-    __syncthreads();
-
-
-    if ((i > 0) && (i < nx - 1))
-        if ((j > 0) && (j < ny - 1))
-            if ((k > 0) && (k < nz - 1))
-               A(i, j, k) = temp(threadIdx.x, threadIdx.y, threadIdx.z) + val_j[i][k] / (1 << (threadIdx.y + 1));
-    __syncthreads();
-
-
-    if (threadIdx.y == blockDim.y - 1)
-        if ((i > 0) && (i < nx - 1))
-            if ((k > 0) && (k < nz - 1))
-                val_j[i][k] = (blockIdx.y == gridDim.y - 1) ? 0 : A(i, j, k);
-
-    if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
-        __threadfence();
-        atomicAdd(&dim_j[blockIdx.x][blockIdx.z], 1);
-        if (blockIdx.y  == gridDim.y - 1)
-            dim_j[blockIdx.x][blockIdx.z] = 0;
-    } 
-}
-
-
-__global__ void function_k(double *A, double *eps) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    int j = blockIdx.y * blockDim.y + threadIdx.y;
-    int k = blockIdx.z * blockDim.z + threadIdx.z;
-
-    extern __shared__ float temp[];
-
-    if (threadIdx.z == 0)
-        temp(threadIdx.x, threadIdx.y, threadIdx.z) = 0;
-    else
-        if ((i > 0) && (i < nx - 1))
-            if ((j > 0) && (j < ny - 1))
-                if ((k > 0) && (k < nz - 1))
-                    temp(threadIdx.x, threadIdx.y, threadIdx.z) = A(i, j, k) / 4;
-
-    for (int d = 1; d < blockDim.z; d <<= 1) {
-        __syncthreads();
-        float tmp = (threadIdx.z >= d) ? temp(threadIdx.x, threadIdx.y, threadIdx.z - d) : 0;
-        __syncthreads();
-        temp(threadIdx.x, threadIdx.y, threadIdx.z) += tmp / (1 << d);
-    }
-    if ((i > 0) && (i < nx - 1))
-        if ((j > 0) && (j < ny - 1))
-            if ((k > 0) && (k < nz - 1))
-                temp(threadIdx.x, threadIdx.y, threadIdx.z) += A(i, j, k + 1) / 2;
-
-
-    if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
-        while (atomicAdd(&dim_k[blockIdx.x][blockIdx.y], 0) < blockIdx.z);
-    }
-    __syncthreads();
-
-
-    if ((i > 0) && (i < nx - 1))
-        if ((j > 0) && (j < ny - 1))
-            if ((k > 0) && (k < nz - 1)) {
-                double tmp1 = temp(threadIdx.x, threadIdx.y, threadIdx.z) + val_k[i][j] / (1 << (threadIdx.z + 1));
-                eps(i, j ,k) = fabs(A(i, j, k) - tmp1);
-                A(i, j, k) = tmp1;
-            }
-    __syncthreads();
-
-
-    if (threadIdx.z == blockDim.z - 1)
-        if ((i > 0) && (i < nx - 1))
-            if ((j > 0) && (j < ny - 1))
-                val_k[i][j] = (blockIdx.z == gridDim.z - 1) ? 0 : A(i, j, k);
-
-    if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
-        __threadfence();
-        atomicAdd(&dim_k[blockIdx.x][blockIdx.y], 1);
-        if (blockIdx.z  == gridDim.z - 1)
-            dim_k[blockIdx.x][blockIdx.y] = 0;
-    } 
-}
 
 __global__ void init_i(double *A) {
     int j = blockIdx.y * blockDim.y + threadIdx.y;
