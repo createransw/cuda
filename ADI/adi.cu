@@ -216,7 +216,7 @@ __global__ void init_i(double *A) {
 
     if (j < ny)
         if (k < nz) 
-            val_i[j][k] = (10.0 * j / (ny - 1) + 10.0 * k / (nz - 1)) * 2;
+            val_i[j][k] = 10.0 * j / (ny - 1) + 10.0 * k / (nz - 1);
 }
 __global__ void init_j(double *A) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
