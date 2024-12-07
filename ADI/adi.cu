@@ -25,9 +25,9 @@
 #define eps(i, j, k) eps[((i) * ny + (j)) * nz + (k)]
 #define temp(i, j, k) temp[((i) * 8 + (j)) * 8 + (k)]
 
-#define nx 800
-#define ny 800
-#define nz 800
+#define nx 5
+#define ny 5
+#define nz 5
         
 
 double maxeps = 0.01;
@@ -99,6 +99,60 @@ __global__ void function_i(double *A) {
 }
 
 
+__global__ void function_j(double *A) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    int j = blockIdx.y * blockDim.y + threadIdx.y;
+    int k = blockIdx.z * blockDim.z + threadIdx.z;
+
+    extern __shared__ float temp[];
+
+    if ((threadIdx.y == 0) || (j == 1))
+        temp(threadIdx.x, threadIdx.y, threadIdx.z) = 0;
+    else
+        if (i < nx)
+            if (j < ny)
+                if (k < nz)
+                    temp(threadIdx.x, threadIdx.y, threadIdx.z) = A(i, j, k) / 4;
+
+    for (int d = 1; d < blockDim.y; d <<= 1) {
+        __syncthreads();
+        double tmp = (threadIdx.y >= d) ? temp(threadIdx.x, threadIdx.y - d, threadIdx.z) : 0;
+        __syncthreads();
+        temp(threadIdx.x, threadIdx.y, threadIdx.z) += (tmp / (1 << d));
+    }
+    if (i < nx - 1)
+        if (j < ny)
+            if (k < nz)
+                temp(threadIdx.x, threadIdx.y, threadIdx.z) += A(i, j + 1, k) / 2;
+
+
+    if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
+        while (atomicAdd(&dim_j[blockIdx.x][blockIdx.z], 0) < blockIdx.y);
+    }
+    __syncthreads();
+
+    if ((i > 0) && (i < nx - 1))
+        if ((j > 0) && (j < ny - 1))
+            if ((k > 0) && (k < nz - 1))
+               A(i, j, k) = temp(threadIdx.x, threadIdx.y, threadIdx.z) + val_j[i][k] / (1 << (threadIdx.y + 1));
+    __syncthreads();
+
+
+    if (threadIdx.y == blockDim.y - 1)
+        if (i < nx)
+            if (k < nz) {
+                val_j[i][k] = (blockIdx.y == gridDim.y - 1) ? A(i, 0, k) * 2 : A(i, j, k);
+            }
+
+    if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
+        __threadfence();
+        atomicAdd(&dim_j[blockIdx.x][blockIdx.z], 1);
+        if (blockIdx.y  == gridDim.y - 1)
+            dim_i[blockIdx.x][blockIdx.z] = 0;
+    } 
+}
+
+
 __global__ void init_i(double *A) {
     int j = blockIdx.y * blockDim.y + threadIdx.y;
     int k = blockIdx.z * blockDim.z + threadIdx.z;
@@ -106,6 +160,14 @@ __global__ void init_i(double *A) {
     if (j < ny)
         if (k < nz) 
             val_i[j][k] = (10.0 * j / (ny - 1) + 10.0 * k / (nz - 1)) * 2;
+}
+__global__ void init_j(double *A) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    int k = blockIdx.z * blockDim.z + threadIdx.z;
+
+    if (i < nx)
+        if (k < nz) 
+            val_j[i][k] = (10.0 * i / (nx - 1) + 10.0 * k / (nz - 1)) * 2;
 }
 
 
@@ -187,6 +249,7 @@ int main(int argc, char *argv[])
         int block_size = 16 * 8 * 8 * sizeof(double);
 
         init_i<<<gridDim, blockDim>>>(A_device);
+        init_j<<<gridDim, blockDim>>>(A_device);
 
 
         cudaEvent_t startt, endt;
@@ -197,9 +260,9 @@ int main(int argc, char *argv[])
 
         SAFE_CALL(cudaEventRecord(startt, 0));
         for (int it = 1; it <= itmax; it++) {
-            function_i<<<gridDim, blockDim, block_size>>>(A_device);
-            /*function_j<<<gridDim, blockDim, block_size>>>(A_device);
-            function_k<<<gridDim, blockDim, block_size>>>(A_device, ptrdiff);
+            //function_i<<<gridDim, blockDim, block_size>>>(A_device);
+            function_j<<<gridDim, blockDim, block_size>>>(A_device);
+            /*function_k<<<gridDim, blockDim, block_size>>>(A_device, ptrdiff);
 
 
             eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
