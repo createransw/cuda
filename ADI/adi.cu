@@ -260,7 +260,7 @@ double dev(const double *A, const double *B) {
             std::cout << B(i, j, 1) << ' ';
         std::cout << std::endl;
     }
-    int I, J;
+    int I, J, K;
     for (int i = 1; i < nx - 1; i++)
         for (int j = 1; j < ny - 1; j++)
             for (int k = 1; k < nz - 1; k++)
@@ -269,12 +269,13 @@ double dev(const double *A, const double *B) {
                 if (tmp > delta) {
                     I = i;
                     J = j;
+                    K = k;
                 }
 
                 delta = Max(tmp, delta);
 
                 if (A(i, j, k) == 0) count++;
             }
-    std::cout << '(' << I << ',' << J << ')' << std::endl;
+    std::cout << '(' << I << ',' << J << ',' << K << ')' << std::endl;
     return A == B ? count : delta;
 }
