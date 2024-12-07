@@ -26,8 +26,8 @@
 #define temp(i, j, k) temp[((i) * 8 + (j)) * 8 + (k)]
 
 #define nx 50
-#define ny 50
-#define nz 50
+#define ny 150
+#define nz 90
         
 
 double maxeps = 0.01;
