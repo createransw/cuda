@@ -211,12 +211,14 @@ __global__ void function_k(double *A, double *eps) {
 
 
 __global__ void init_i(double *A) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
     int k = blockIdx.z * blockDim.z + threadIdx.z;
 
-    if (j < ny)
-        if (k < nz) 
-            val_i[j][k] = 10.0 * j / (ny - 1) + 10.0 * k / (nz - 1);
+    if (i == 0) 
+        if (j < ny)
+            if (k < nz) 
+                val_i[j][k] = 10.0 * j / (ny - 1) + 10.0 * k / (nz - 1);
 }
 __global__ void init_j(double *A) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
