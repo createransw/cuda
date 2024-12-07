@@ -24,7 +24,7 @@
 
 
 // #define L 885
-#define L 600
+#define L 400
 #define ITMAX 100
 
 double eps;
