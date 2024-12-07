@@ -25,9 +25,9 @@
 #define eps(i, j, k) eps[((i) * ny + (j)) * nz + (k)]
 #define temp(i, j, k) temp[((i) * 8 + (j)) * 8 + (k)]
 
-#define nx 7
-#define ny 7
-#define nz 7
+#define nx 800
+#define ny 800
+#define nz 800
         
 
 double maxeps = 0.01;
@@ -251,7 +251,7 @@ void init(double *A)
 double dev(const double *A, const double *B) {
     double delta = 0.0;
     int count = 0;
-    std::cout << std::endl;
+    /*std::cout << std::endl;
     for (int i = 0; i < nx; i++) {
         for (int j = 0; j < ny; j++)
             std::cout << A(i, j, 4) << ' ';
@@ -259,7 +259,7 @@ double dev(const double *A, const double *B) {
         for (int j = 0; j < ny; j++)
             std::cout << B(i, j, 4) << ' ';
         std::cout << std::endl;
-    }
+    };*/
     int I, J, K;
     for (int i = 1; i < nx - 1; i++)
         for (int j = 1; j < ny - 1; j++)
