@@ -254,10 +254,10 @@ double dev(const double *A, const double *B) {
     std::cout << std::endl;
     for (int i = 0; i < nx; i++) {
         for (int j = 0; j < ny; j++)
-            std::cout << A(i, j, 1) << ' ';
+            std::cout << A(i, j, 4) << ' ';
         std::cout << "\t\t\t";
         for (int j = 0; j < ny; j++)
-            std::cout << B(i, j, 1) << ' ';
+            std::cout << B(i, j, 4) << ' ';
         std::cout << std::endl;
     }
     int I, J, K;
