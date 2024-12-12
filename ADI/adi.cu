@@ -127,7 +127,7 @@ __global__ void function_j(double *A) {
 
 
     if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
-        while (atomicAdd(&dim_j[blockIdx.x][blockIdx.z], 0) < blockIdx.y);
+        while (dim_j[blockIdx.x][blockIdx.z] < blockIdx.y);
     }
     __syncthreads();
 
@@ -146,7 +146,7 @@ __global__ void function_j(double *A) {
 
     if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
         __threadfence();
-        atomicAdd(&dim_j[blockIdx.x][blockIdx.z], 1);
+        dim_j[blockIdx.x][blockIdx.z] += 1;
         if (blockIdx.y  == gridDim.y - 1)
             dim_i[blockIdx.x][blockIdx.z] = 0;
     } 
