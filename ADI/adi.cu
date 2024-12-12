@@ -1,6 +1,5 @@
 /* ADI program */
 
-#include <__clang_cuda_builtin_vars.h>
 #include <cstdio>
 #include <ctime>
 #include <math.h>
