@@ -1,5 +1,6 @@
 /* ADI program */
 
+#include <__clang_cuda_builtin_vars.h>
 #include <cstdio>
 #include <ctime>
 #include <math.h>
@@ -31,7 +32,7 @@
         
 
 double maxeps = 0.01;
-double itmax = 100;
+double itmax = 1;
 
 void init(double *a);
 double dev(const double *A, const double *B);
@@ -76,6 +77,9 @@ __global__ void function_i(double *A) {
         while (atomicAdd(&dim_i[blockIdx.y][blockIdx.z], 0) < blockIdx.x);
     }
     __syncthreads();
+    if (blockIdx.y == 0 && blockIdx.z == 0)
+        if (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0)
+            printf("%d ", blockIdx.x);
 
     if ((i > 0) && (i < nx - 1))
         if ((j > 0) && (j < ny - 1))
@@ -89,6 +93,9 @@ __global__ void function_i(double *A) {
             if (k < nz) {
                 val_i[j][k] = (blockIdx.x == gridDim.x - 1) ? A(0, j, k) : A(i, j, k);
             }
+    if (blockIdx.y == 0 && blockIdx.z == 0)
+        if (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0)
+            printf("%d ", blockIdx.x);
 
     if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
         __threadfence();
