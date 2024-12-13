@@ -97,10 +97,11 @@ __global__ void function_i(double *A) {
 
 
     if (threadIdx.x == blockDim.x - 1)
-        if (j < ny)
-            if (k < nz) {
-                val_i[j][k] = (my_block_id == gridDim.x - 1) ? A(0, j, k) : A(i, j, k);
-            }
+        if (i < nx)
+            if (j < ny)
+                if (k < nz) {
+                    val_i[j][k] = (my_block_id == gridDim.x - 1) ? A(0, j, k) : A(i, j, k);
+                }
 
     if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
         __threadfence();
