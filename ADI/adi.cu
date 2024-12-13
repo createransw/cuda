@@ -25,9 +25,9 @@
 #define eps(i, j, k) eps[((i) * ny + (j)) * nz + (k)]
 #define temp(i, j, k) temp[((i) * 8 + (j)) * 8 + (k)]
 
-#define nx 200
-#define ny 200
-#define nz 200
+#define nx 800
+#define ny 800
+#define nz 800
         
 
 double maxeps = 0.01;
