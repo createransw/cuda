@@ -23,8 +23,8 @@
 #define eps(i, j, k) eps[((i) * L + (j)) * L + (k)]
 
 
-//#define L 885
-#define L 800
+#define L 885
+//#define L 800
 #define ITMAX 100
 
 double eps;
@@ -72,8 +72,8 @@ void set(double *A, double *B) {
 
 class mabs{
 public:
-    __host__ __device__ float operator()(thrust::tuple<double,double> t) {
-        float a, b;
+    __host__ __device__ double operator()(thrust::tuple<double,double> t) {
+        double a, b;
         thrust::tie(a, b) = t;
         return fabs(a - b);
     }
