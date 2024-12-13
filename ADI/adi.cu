@@ -1,5 +1,6 @@
 /* ADI program */
 
+#include <__clang_cuda_builtin_vars.h>
 #include <cstdio>
 #include <ctime>
 #include <math.h>
@@ -25,9 +26,9 @@
 #define eps(i, j, k) eps[((i) * ny + (j)) * nz + (k)]
 #define temp(i, j, k) temp[((i) * 8 + (j)) * 8 + (k)]
 
-#define nx 800
-#define ny 800
-#define nz 800
+#define nx 200
+#define ny 200
+#define nz 200
         
 
 double maxeps = 0.01;
@@ -40,13 +41,23 @@ __device__ int dim_i[ny / 8 + 1][nz / 8 + 1];
 __device__ int dim_j[nx / 16 + 1][nz / 8 + 1];
 __device__ int dim_k[nx / 16 + 1][ny / 8 + 1];
 
+__device__ int ord_i[ny / 8 + 1][nz / 8 + 1];
+__device__ int ord_j[nx / 16 + 1][nz / 8 + 1];
+__device__ int ord_k[nx / 16 + 1][ny / 8 + 1];
+
 
 __device__ double val_i[ny][nz];
 __device__ double val_j[nx][nz];
 __device__ double val_k[nx][ny];
 
 __global__ void function_i(double *A) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x + 1;
+    __shared__ int my_block_id;
+    if (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0) {
+        my_block_id = atomicAdd(&ord_i[blockIdx.y][blockIdx.z], 1);
+    }
+    __syncthreads();
+
+    int i = my_block_id * blockDim.x + threadIdx.x + 1;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
     int k = blockIdx.z * blockDim.z + threadIdx.z;
 
@@ -73,7 +84,7 @@ __global__ void function_i(double *A) {
 
 
     if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
-        while (atomicAdd(&dim_i[blockIdx.y][blockIdx.z], 0) < blockIdx.x);
+        while (atomicAdd(&dim_i[blockIdx.y][blockIdx.z], 0) < my_block_id);
     }
     __syncthreads();
 
@@ -87,14 +98,16 @@ __global__ void function_i(double *A) {
     if (threadIdx.x == blockDim.x - 1)
         if (j < ny)
             if (k < nz) {
-                val_i[j][k] = (blockIdx.x == gridDim.x - 1) ? A(0, j, k) : A(i, j, k);
+                val_i[j][k] = (my_block_id == gridDim.x - 1) ? A(0, j, k) : A(i, j, k);
             }
 
     if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
         __threadfence();
         atomicAdd(&dim_i[blockIdx.y][blockIdx.z], 1);
-        if (blockIdx.x  == gridDim.x - 1)
+        if (my_block_id  == gridDim.x - 1) {
             dim_i[blockIdx.y][blockIdx.z] = 0;
+            ord_i[blockIdx.y][blockIdx.z] = 0;
+        }
     } 
 }
 
@@ -219,6 +232,8 @@ __global__ void init_i(double *A) {
         if (j < ny)
             if (k < nz) 
                 val_i[j][k] = 10.0 * j / (ny - 1) + 10.0 * k / (nz - 1);
+    dim_i[blockIdx.y][blockIdx.z] = 0;
+    ord_i[blockIdx.y][blockIdx.z] = 0;
 }
 __global__ void init_j(double *A) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
