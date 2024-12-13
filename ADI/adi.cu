@@ -395,6 +395,7 @@ void init(double *A)
 }
 
 double dev(const double *A, const double *B) {
+    double relative = 0.0;
     double delta = 0.0;
     int count = 0;
     /*std::cout << std::endl;
@@ -412,6 +413,7 @@ double dev(const double *A, const double *B) {
             for (int k = 1; k < nz - 1; k++)
             {
                 double tmp = fabs(B(i, j, k) - A(i, j, k));
+                double tmp1 = tmp / fabs(B(i, j, k));
                 if (tmp > delta) {
                     I = i;
                     J = j;
@@ -419,9 +421,11 @@ double dev(const double *A, const double *B) {
                 }
 
                 delta = Max(tmp, delta);
+                relative = Max(tmp1, relative);
 
                 if (A(i, j, k) == 0) count++;
             }
     std::cout << '(' << I << ',' << J << ',' << K << ')' << std::endl;
+    std::cout << relative << std::endl;
     return A == B ? count : delta;
 }
