@@ -52,9 +52,9 @@ __device__ double val_k[nx][ny];
 __global__ void function_i(double *A) {
     __shared__ int my_block_id;
     if (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0) {
+        my_block_id = atomicAdd(&ord_i[blockIdx.y][blockIdx.z], 1);
         if (blockIdx.y == 0 && blockIdx.z == 0)
             printf("%d ", ord_i[blockIdx.y][blockIdx.z]);
-        my_block_id = atomicAdd(&ord_i[blockIdx.y][blockIdx.z], 1);
     }
     __syncthreads();
 
