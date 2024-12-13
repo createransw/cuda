@@ -204,9 +204,6 @@ int main(int an, char **as)
             SAFE_CALL(cudaMemcpy(A_host, A_device, size, cudaMemcpyDeviceToHost));
         else
             SAFE_CALL(cudaMemcpy(A_host, B_device, size, cudaMemcpyDeviceToHost));
-
-        SAFE_CALL(cudaFree(A_device));
-        SAFE_CALL(cudaFree(B_device));
     }
 
 
