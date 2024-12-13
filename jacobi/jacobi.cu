@@ -147,9 +147,7 @@ int main(int an, char **as)
         thrust::device_vector<double> B_thrust(L * L * L);
         B_device = (double*) thrust::raw_pointer_cast(&B_thrust[0]);
 
-        SAFE_CALL(cudaMalloc((void**)&A_device, size));
         SAFE_CALL(cudaMemcpy(A_device, A_host, size, cudaMemcpyHostToDevice));
-        SAFE_CALL(cudaMalloc((void**)&B_device, size));
         SAFE_CALL(cudaMemcpy(B_device, B_host, size, cudaMemcpyHostToDevice));
 
         double eps = 0.0;
