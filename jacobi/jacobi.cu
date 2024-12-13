@@ -72,7 +72,9 @@ void set(double *A, double *B) {
 
 class mabs{
 public:
-    __device__ float operator()(double a, double b) {
+    __host__ __device__ float operator()(thrust::tuple<double,double> t) {
+        float a, b;
+        thrust::tie(a, b) = t;
         return fabs(a - b);
     }
 };
