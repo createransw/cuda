@@ -30,7 +30,7 @@
 double eps;
 double MAXEPS = 0.5;
 
-__global__ void function(const double *A, double *B, double *eps) {
+__global__ void function(const double *A, double *B) {
     int k = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
     int i = blockIdx.z * blockDim.z + threadIdx.z;
@@ -39,22 +39,6 @@ __global__ void function(const double *A, double *B, double *eps) {
         if ((j > 0) && (j < L - 1)) {
             if ((k > 0) && (k < L - 1)) {
                 B(i, j, k) = (A(i - 1, j, k) + A(i, j - 1, k) + A(i, j, k - 1) + A(i, j, k + 1) + A(i, j + 1, k) + A(i + 1, j, k)) / 6.0;
-                eps(i, j, k) = fabs(B(i, j, k) - A(i, j, k));
-            }
-        }
-    }
-}
-
-__global__ void difference_ab(double *A, const double *B, double *eps) {
-    int k = blockIdx.x * blockDim.x + threadIdx.x;
-    int j = blockIdx.y * blockDim.y + threadIdx.y;
-    int i = blockIdx.z * blockDim.z + threadIdx.z;
-
-    if ((i > 0) && (i < L - 1)) {
-        if ((j > 0) && (j < L - 1)) {
-            if ((k > 0) && (k < L - 1)) {
-                eps(i, j, k) = fabs(B(i, j, k) - A(i, j, k));
-                A(i, j, k) = B(i, j, k);
             }
         }
     }
@@ -84,6 +68,14 @@ void set(double *A, double *B) {
                     B(i, j, k) = 4 + i + j + k;
             }    
 }
+
+
+class mabs{
+public:
+    __device__ float operator()(double a, double b) {
+        return fabs(a - b);
+    }
+};
 
 int main(int an, char **as)
 {
@@ -148,13 +140,16 @@ int main(int an, char **as)
         set(A_host, B_host);
 
         double *A_device, *B_device;
+        thrust::device_vector<double> A_thrust(L * L * L);
+        A_device = (double*) thrust::raw_pointer_cast(&A_thrust[0]);
+        thrust::device_vector<double> B_thrust(L * L * L);
+        B_device = (double*) thrust::raw_pointer_cast(&B_thrust[0]);
+
         SAFE_CALL(cudaMalloc((void**)&A_device, size));
         SAFE_CALL(cudaMemcpy(A_device, A_host, size, cudaMemcpyHostToDevice));
         SAFE_CALL(cudaMalloc((void**)&B_device, size));
         SAFE_CALL(cudaMemcpy(B_device, B_host, size, cudaMemcpyHostToDevice));
 
-        thrust::device_vector<double> diff(L * L * L);
-        double *ptrdiff = thrust::raw_pointer_cast(&diff[0]);
         double eps = 0.0;
 
 
@@ -172,19 +167,31 @@ int main(int an, char **as)
 
         cudaEventRecord(startt, 0);
 
-        difference_ab<<<gridDim, blockDim>>>(A_device, B_device, ptrdiff);
         flg = not flg;
-        eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
         /* iteration loop */
         for (int it = 1; it <= ITMAX - 1; it++) {
+            eps = thrust::transform_reduce(
+                    thrust::make_zip_iterator(
+                        thrust::make_tuple(
+                            A_thrust.begin(),
+                            B_thrust.begin()
+                            )),
+                    thrust::make_zip_iterator(
+                        thrust::make_tuple(
+                            A_thrust.end(),
+                            B_thrust.end()
+                            )),
+                    mabs(),
+                    0.0,
+                    thrust::maximum<double>()
+                    );
+            if (flg)
+                function<<<gridDim, blockDim>>>(A_device, B_device);
+            else 
+                function<<<gridDim, blockDim>>>(B_device, A_device);
+            flg = not flg;
             if (eps < MAXEPS)
                 break;
-            if (flg)
-                function<<<gridDim, blockDim>>>(A_device, B_device, ptrdiff);
-            else 
-                function<<<gridDim, blockDim>>>(B_device, A_device, ptrdiff);
-            flg = not flg;
-            eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
         }
         cudaEventRecord(endt, 0);
 
