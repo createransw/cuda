@@ -408,7 +408,7 @@ double dev(const double *A, const double *B) {
         std::cout << std::endl;
     };*/
     for (int i = 0; i < nx; i++) {
-        std::cout << A(i, 2, 2) << ' ';
+        std::cout << A(i, 2, 2)*1024<< ' ';
     }
         std::cout << "\t\t\t";
         std::cout << std::endl;
