@@ -430,6 +430,8 @@ int main(int argc, char *argv[])
 
         SAFE_CALL(cudaMemcpy(A_host, A_device, size, cudaMemcpyDeviceToHost));
 
+        std::cout << A_host(1, 3, 7) << '\n';
+
         SAFE_CALL(cudaFree(A_device));
     }
 
@@ -472,7 +474,6 @@ double dev(const double *A, const double *B) {
             for (int k = 1; k < nz - 1; k++)
             {
                 double tmp = fabs(B(i, j, k) - A(i, j, k));
-                std::cout << tmp << ' ';
                 delta = Max(tmp, delta);
                 if (A(i, j, k) == 0) count++;
             }
