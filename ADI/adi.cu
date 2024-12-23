@@ -76,6 +76,7 @@ __global__ void function_i(double *A) {
             if (j < ny)
                 if (k < nz)
                     temp_i(threadIdx.x, threadIdx.y, threadIdx.z) = A(i, j, k) / 4;
+    printf("%f ", temp_i(threadIdx.x, threadIdx.y, threadIdx.z) );
 
     for (int d = 1; d < blockDim.x; d <<= 1) {
         __syncthreads();
@@ -83,7 +84,6 @@ __global__ void function_i(double *A) {
         __syncthreads();
         temp_i(threadIdx.x, threadIdx.y, threadIdx.z) += (tmp / (1 << d));
     }
-    printf("%f ", temp_i(threadIdx.x, threadIdx.y, threadIdx.z) );
     if (i < nx - 1)
         if (j < ny)
             if (k < nz)
