@@ -27,9 +27,9 @@
 #define temp_j(i, j, k) temp_j[((i) * 64 + (j)) * 4 + (k)]
 #define temp_k(i, j, k) temp_k[((i) * 4 + (j)) * 64 + (k)]
 
-#define nx 200
-#define ny 200
-#define nz 200
+#define nx 835
+#define ny 835
+#define nz 835
         
 
 double maxeps = 0.01;
