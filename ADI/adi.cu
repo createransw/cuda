@@ -380,7 +380,6 @@ int main(int argc, char *argv[])
 
         SAFE_CALL(cudaEventRecord(startt, 0));
         for (int it = 1; it <= itmax; it++) {
-            std::cerr << it << ' ';
             function_i<<<gridDim_i, blockDim_i, block_size>>>(A_device);
             function_j<<<gridDim_j, blockDim_j, block_size>>>(A_device);
             function_k<<<gridDim_k, blockDim_k, block_size>>>(A_device, ptrdiff);
