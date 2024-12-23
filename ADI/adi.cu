@@ -27,9 +27,9 @@
 #define temp_j(i, j, k) temp_j[((i) * 64 + (j)) * 4 + (k)]
 #define temp_k(i, j, k) temp_k[((i) * 4 + (j)) * 64 + (k)]
 
-#define nx 800
-#define ny 800
-#define nz 800
+#define nx 600
+#define ny 600
+#define nz 600
         
 
 double maxeps = 0.01;
@@ -403,6 +403,7 @@ int main(int argc, char *argv[])
     if (CPU && GPU) {
         std::cout << "cpu time = " << cpu_time << std::endl;
         std::cout << "gpu time = " << gpu_time * 0.001 <<  std::endl;
+        std::cout << "decrease = " << cpu_time / gpu_time * 1000<< std::endl;
         std::cout << "maksimum deviation = " << dev(A, A_host) << std::endl;
     } else if (CPU) {
         std::cout << "cpu time = " << cpu_time << std::endl;
