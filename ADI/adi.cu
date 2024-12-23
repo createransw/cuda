@@ -31,7 +31,7 @@
         
 
 double maxeps = 0.01;
-double itmax = 1;
+double itmax = 2;
 
 void init(double *a);
 double dev(const double *A, const double *B);
