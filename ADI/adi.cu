@@ -401,41 +401,13 @@ double dev(const double *A, const double *B) {
     double relative = 0.0;
     double delta = 0.0;
     int count = 0;
-    /*std::cout << std::endl;
-    for (int i = 0; i < nx; i++) {
-        for (int j = 0; j < ny; j++)
-            std::cout << A(i, j, 1) << ' ';
-        std::cout << "\t\t\t";
-        for (int j = 0; j < ny; j++)
-            std::cout << B(i, j, 1) << ' ';
-        std::cout << std::endl;
-    };*/
-    for (int i = 0; i < nx; i++) {
-        std::cout << A(i, 2, 2)*1024<< ' ';
-    }
-        std::cout << "\t\t\t";
-        std::cout << std::endl;
-    int I, J, K;
     for (int i = 1; i < nx - 1; i++)
         for (int j = 1; j < ny - 1; j++)
             for (int k = 1; k < nz - 1; k++)
             {
                 double tmp = fabs(B(i, j, k) - A(i, j, k));
-                double tmp1 = 0;
-                if (fabs(B(i, j, k) > 0.0001))
-                    tmp1 = tmp / fabs(B(i, j, k));
-                if (tmp > delta) {
-                    I = i;
-                    J = j;
-                    K = k;
-                }
-
                 delta = Max(tmp, delta);
-                relative = Max(tmp1, relative);
-
                 if (A(i, j, k) == 0) count++;
             }
-    //std::cout << '(' << I << ',' << J << ',' << K << ')' << std::endl;
-    std::cout << relative << std::endl;
     return A == B ? count : delta;
 }
