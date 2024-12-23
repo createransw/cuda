@@ -434,7 +434,7 @@ int main(int argc, char *argv[])
 
         SAFE_CALL(cudaMemcpy(A_host, A_device, size, cudaMemcpyDeviceToHost));
 
-        std::cout << A_host(1, 3, 7) << '\n';
+        std::cout << A_host(1, 3, 2) << '\n';
 
         SAFE_CALL(cudaFree(A_device));
     }
