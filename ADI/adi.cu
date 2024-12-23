@@ -23,7 +23,7 @@
 #define A_host(i, j, k) A_host[((i) * ny + (j)) * nz + (k)]
 #define B(i, j, k) B[((i) * ny + (j)) * nz + (k)]
 #define eps(i, j, k) eps[((i) * ny + (j)) * nz + (k)]
-#define temp(i, j, k) temp[((i) * 8 + (j)) * 8 + (k)]
+#define temp(i, j, k) temp[((i) * 4 + (j)) * 4 + (k)]
 
 #define nx 800
 #define ny 800
@@ -36,11 +36,11 @@ double itmax = 100;
 void init(double *a);
 double dev(const double *A, const double *B);
 
-__device__ int dim_i[ny / 8 + 1][nz / 8 + 1];
+__device__ int dim_i[ny / 4 + 1][nz / 4 + 1];
 __device__ int dim_j[nx / 16 + 1][nz / 8 + 1];
 __device__ int dim_k[nx / 16 + 1][ny / 8 + 1];
 
-__device__ int ord_i[ny / 8 + 1][nz / 8 + 1];
+__device__ int ord_i[ny / 4 + 1][nz / 4 + 1];
 __device__ int ord_j[nx / 16 + 1][nz / 8 + 1];
 __device__ int ord_k[nx / 16 + 1][ny / 8 + 1];
 
@@ -328,10 +328,10 @@ int main(int argc, char *argv[])
         double *ptrdiff = thrust::raw_pointer_cast(&diff[0]);
 
 
-        dim3 blockDim = dim3(16, 8, 8);
-        dim3 gridDim = dim3(nx / 16 + 1, ny / 8 + 1, nz / 8 + 1);
+        dim3 blockDim = dim3(64, 4, 4);
+        dim3 gridDim = dim3(nx / 64 + 1, ny / 4 + 1, nz / 4 + 1);
 
-        int block_size = 16 * 8 * 8 * sizeof(double);
+        int block_size = 64 * 4 * 4 * sizeof(double);
 
         init_i<<<gridDim, blockDim>>>(A_device);
         init_j<<<gridDim, blockDim>>>(A_device);
