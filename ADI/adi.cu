@@ -87,6 +87,7 @@ __global__ void function_i(double *A) {
         if (j < ny)
             if (k < nz)
                 temp_i(threadIdx.x, threadIdx.y, threadIdx.z) += A(i + 1, j, k) / 2;
+    printf("%f ", temp_i(threadIdx.x, threadIdx.y, threadIdx.z) );
 
 
     if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
@@ -98,7 +99,6 @@ __global__ void function_i(double *A) {
         if ((j > 0) && (j < ny - 1))
             if ((k > 0) && (k < nz - 1))
                A(i, j, k) = temp_i(threadIdx.x, threadIdx.y, threadIdx.z) + val_i[j][k] / (1 << (threadIdx.x + 1));
-    printf("%f ", temp_i(threadIdx.x, threadIdx.y, threadIdx.z) );
     __syncthreads();
 
 
