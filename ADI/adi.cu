@@ -380,7 +380,7 @@ int main(int argc, char *argv[])
 
         thrust::device_vector<double> diff(nx * ny * nz);
         double *ptrdiff = thrust::raw_pointer_cast(&diff[0]);
-        //SAFE_CALL(cudaMemcpy(ptrdiff, A_host, size, cudaMemcpyHostToDevice));
+        SAFE_CALL(cudaMemcpy(ptrdiff, A_host, size, cudaMemcpyHostToDevice));
 
 
         dim3 blockDim_i = dim3(64, 4, 4);
@@ -409,7 +409,7 @@ int main(int argc, char *argv[])
 
         SAFE_CALL(cudaEventRecord(startt, 0));
         for (int it = 1; it <= itmax; it++) {
-            function_i<<<gridDim_i, blockDim_i, block_size>>>(A_device);
+            //function_i<<<gridDim_i, blockDim_i, block_size>>>(A_device);
             //rotate<<<gridDim_r, blockDim_r>>>(A_device);
             //function_j<<<gridDim_j, blockDim_j, block_size>>>(A_device);
             //rotate<<<gridDim_r, blockDim_r>>>(A_device);
