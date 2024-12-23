@@ -67,7 +67,7 @@ __global__ void function_i(double *A) {
     int j = blockIdx.y * blockDim.y + threadIdx.y;
     int k = blockIdx.z * blockDim.z + threadIdx.z;
 
-    extern __shared__ float temp_i[];
+    extern __shared__ double temp_i[];
 
     if (threadIdx.x == 0)
         temp_i(threadIdx.x, threadIdx.y, threadIdx.z) = 0;
