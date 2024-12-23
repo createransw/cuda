@@ -32,9 +32,9 @@
 #define temp_j(i, j, k) temp_j[((i) * 64 + (j)) * 4 + (k)]
 #define temp_k(i, j, k) temp_k[((i) * 4 + (j)) * 64 + (k)]
 
-#define nx 5
-#define ny 5
-#define nz 5
+#define nx 800
+#define ny 800
+#define nz 800
         
 
 double maxeps = 0.01;
@@ -75,7 +75,7 @@ __global__ void function_i(double *A) {
         if (i < nx)
             if (j < ny)
                 if (k < nz)
-                    temp_i(threadIdx.x, threadIdx.y, threadIdx.z) = A(i, j, k) / 4;
+                    temp_i(threadIdx.x, threadIdx.y, threadIdx.z) = A_i(i, j, k) / 4;
 
     for (int d = 1; d < blockDim.x; d <<= 1) {
         __syncthreads();
@@ -87,7 +87,7 @@ __global__ void function_i(double *A) {
     if (i < nx - 1)
         if (j < ny)
             if (k < nz)
-                temp_i(threadIdx.x, threadIdx.y, threadIdx.z) += A(i + 1, j, k) / 2;
+                temp_i(threadIdx.x, threadIdx.y, threadIdx.z) += A_i(i + 1, j, k) / 2;
 
 
     if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
@@ -98,7 +98,7 @@ __global__ void function_i(double *A) {
     if ((i > 0) && (i < nx - 1))
         if ((j > 0) && (j < ny - 1))
             if ((k > 0) && (k < nz - 1))
-               A(i, j, k) = temp_i(threadIdx.x, threadIdx.y, threadIdx.z) + val_i[j][k] / (1 << (threadIdx.x + 1));
+               A_i(i, j, k) = temp_i(threadIdx.x, threadIdx.y, threadIdx.z) + val_i[j][k] / (1 << (threadIdx.x + 1));
     __syncthreads();
 
 
@@ -106,9 +106,9 @@ __global__ void function_i(double *A) {
         if (j < ny)
             if (k < nz) {
                 if (my_block_id == gridDim.x - 1) {
-                    val_i[j][k] = A(0, j, k);
+                    val_i[j][k] = A_i(0, j, k);
                 } else {
-                    val_i[j][k] = A(i, j, k);
+                    val_i[j][k] = A_i(i, j, k);
                 }
             }
 
@@ -142,7 +142,7 @@ __global__ void function_j(double *A) {
         if (i < nx)
             if (j < ny)
                 if (k < nz)
-                    temp_j(threadIdx.x, threadIdx.y, threadIdx.z) = A(i, j, k) / 4;
+                    temp_j(threadIdx.x, threadIdx.y, threadIdx.z) = A_j(i, j, k) / 4;
 
     for (int d = 1; d < blockDim.y; d <<= 1) {
         __syncthreads();
@@ -153,7 +153,7 @@ __global__ void function_j(double *A) {
     if (i < nx)
         if (j < ny - 1)
             if (k < nz)
-                temp_j(threadIdx.x, threadIdx.y, threadIdx.z) += A(i, j + 1, k) / 2;
+                temp_j(threadIdx.x, threadIdx.y, threadIdx.z) += A_j(i, j + 1, k) / 2;
 
 
     if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
@@ -164,7 +164,7 @@ __global__ void function_j(double *A) {
     if ((i > 0) && (i < nx - 1))
         if ((j > 0) && (j < ny - 1))
             if ((k > 0) && (k < nz - 1))
-               A(i, j, k) = temp_j(threadIdx.x, threadIdx.y, threadIdx.z) + val_j[i][k] / (1 << (threadIdx.y + 1));
+               A_j(i, j, k) = temp_j(threadIdx.x, threadIdx.y, threadIdx.z) + val_j[i][k] / (1 << (threadIdx.y + 1));
     __syncthreads();
 
 
@@ -172,9 +172,9 @@ __global__ void function_j(double *A) {
         if (i < nx)
             if (k < nz) {
                 if (my_block_id == gridDim.y - 1) {
-                    val_j[i][k] = A(i, 0, k);
+                    val_j[i][k] = A_j(i, 0, k);
                 } else {
-                    val_j[i][k] = A(i, j, k);
+                    val_j[i][k] = A_j(i, j, k);
                 }
             }
 
@@ -208,7 +208,7 @@ __global__ void function_k(double *A, double *eps) {
         if (i < nx)
             if (j < ny)
                 if (k < nz)
-                    temp_k(threadIdx.x, threadIdx.y, threadIdx.z) = A(i, j, k) / 4;
+                    temp_k(threadIdx.x, threadIdx.y, threadIdx.z) = A_k(i, j, k) / 4;
 
     for (int d = 1; d < blockDim.z; d <<= 1) {
         __syncthreads();
@@ -219,7 +219,7 @@ __global__ void function_k(double *A, double *eps) {
     if (i < nx)
         if (j < ny)
             if (k < nz - 1)
-                temp_k(threadIdx.x, threadIdx.y, threadIdx.z) += A(i, j, k + 1) / 2;
+                temp_k(threadIdx.x, threadIdx.y, threadIdx.z) += A_k(i, j, k + 1) / 2;
 
 
     if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
@@ -241,9 +241,9 @@ __global__ void function_k(double *A, double *eps) {
         if (i < nx)
             if (j < ny) {
                 if (my_block_id == gridDim.z - 1) {
-                    val_k[i][j] = A(i, j, 0);
+                    val_k[i][j] = A_k(i, j, 0);
                 } else {
-                    val_k[i][j] = A(i, j, k);
+                    val_k[i][j] = A_k(i, j, k);
                 }
             }
 
@@ -399,7 +399,7 @@ int main(int argc, char *argv[])
         init_j<<<gridDim_j, blockDim_j>>>(A_device);
         init_k<<<gridDim_k, blockDim_k>>>(A_device);
 
-        //rotate<<<gridDim_r, blockDim_r>>>(A_device);
+        rotate<<<gridDim_r, blockDim_r>>>(A_device);
 
 
         cudaEvent_t startt, endt;
@@ -411,16 +411,16 @@ int main(int argc, char *argv[])
         SAFE_CALL(cudaEventRecord(startt, 0));
         for (int it = 1; it <= itmax; it++) {
             function_i<<<gridDim_i, blockDim_i, block_size>>>(A_device);
-            //rotate<<<gridDim_r, blockDim_r>>>(A_device);
-            //function_j<<<gridDim_j, blockDim_j, block_size>>>(A_device);
-            //rotate<<<gridDim_r, blockDim_r>>>(A_device);
-            /*function_k<<<gridDim_k, blockDim_k, block_size>>>(A_device, ptrdiff);
-            //rotate<<<gridDim_r, blockDim_r>>>(A_device);
+            rotate<<<gridDim_r, blockDim_r>>>(A_device);
+            function_j<<<gridDim_j, blockDim_j, block_size>>>(A_device);
+            rotate<<<gridDim_r, blockDim_r>>>(A_device);
+            function_k<<<gridDim_k, blockDim_k, block_size>>>(A_device, ptrdiff);
+            rotate<<<gridDim_r, blockDim_r>>>(A_device);
 
 
             eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             if (eps < maxeps)
-                break;*/
+                break;
         }
         SAFE_CALL(cudaEventRecord(endt, 0));
 
@@ -430,12 +430,10 @@ int main(int argc, char *argv[])
         SAFE_CALL(cudaEventDestroy(endt));
 
 
-        //rotate<<<gridDim_r, blockDim_r>>>(A_device);
-        //rotate<<<gridDim_r, blockDim_r>>>(A_device);
+        rotate<<<gridDim_r, blockDim_r>>>(A_device);
+        rotate<<<gridDim_r, blockDim_r>>>(A_device);
 
         SAFE_CALL(cudaMemcpy(A_host, A_device, size, cudaMemcpyDeviceToHost));
-
-        std::cout << A_host(1, 3, 2) << '\n';
 
         SAFE_CALL(cudaFree(A_device));
     }
