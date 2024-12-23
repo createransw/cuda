@@ -81,7 +81,9 @@ __global__ void function_i(double *A) {
         __syncthreads();
         double tmp = (threadIdx.x >= d) ? temp_i(threadIdx.x - d, threadIdx.y, threadIdx.z) : 0;
         __syncthreads();
+        printf("%f ", tmp);
         temp_i(threadIdx.x, threadIdx.y, threadIdx.z) += (tmp / (1 << d));
+        printf("%f ", temp_i(threadIdx.x, threadIdx.y, threadIdx.z));
     }
     if (i < nx - 1)
         if (j < ny)
