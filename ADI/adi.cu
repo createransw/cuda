@@ -82,7 +82,6 @@ __global__ void function_i(double *A) {
         double tmp = (threadIdx.x >= d) ? temp_i(threadIdx.x - d, threadIdx.y, threadIdx.z) : 0;
         __syncthreads();
         temp_i(threadIdx.x, threadIdx.y, threadIdx.z) += (tmp / (1 << d));
-        printf("%f ", temp_i(i, j, k));
     }
     if (i < nx - 1)
         if (j < ny)
@@ -134,7 +133,7 @@ __global__ void function_j(double *A) {
     int j = my_block_id * blockDim.y + threadIdx.y + 1;
     int k = blockIdx.z * blockDim.z + threadIdx.z;
 
-    extern __shared__ float temp_j[];
+    extern __shared__ double temp_j[];
 
     if (threadIdx.y == 0)
         temp_j(threadIdx.x, threadIdx.y, threadIdx.z) = 0;
@@ -200,7 +199,7 @@ __global__ void function_k(double *A, double *eps) {
     int j = blockIdx.y * blockDim.y + threadIdx.y;
     int k = my_block_id * blockDim.z + threadIdx.z + 1;
 
-    extern __shared__ float temp_k[];
+    extern __shared__ double temp_k[];
 
     if (threadIdx.z == 0)
         temp_k(threadIdx.x, threadIdx.y, threadIdx.z) = 0;
@@ -328,7 +327,7 @@ int main(int argc, char *argv[])
     const long size = nx * ny * nz * sizeof(double);
     double *A = (double*)malloc(size);
 
-    float cpu_time = 0;
+    double cpu_time = 0;
     if (CPU) {
         init(A);
 
@@ -360,11 +359,11 @@ int main(int argc, char *argv[])
         }
         clock_t endt = clock();
 
-        cpu_time = float(endt - startt) / CLOCKS_PER_SEC;
+        cpu_time = double(endt - startt) / CLOCKS_PER_SEC;
     }
 
     double *A_host = (double*)malloc(size);
-    float gpu_time = 0;
+    double gpu_time = 0;
     if (GPU) {
         int deviceCount = 0;
         SAFE_CALL(cudaGetDeviceCount(&deviceCount));
