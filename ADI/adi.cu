@@ -27,13 +27,13 @@
 #define temp_j(i, j, k) temp_j[((i) * 64 + (j)) * 4 + (k)]
 #define temp_k(i, j, k) temp_k[((i) * 4 + (j)) * 64 + (k)]
 
-#define nx 400
-#define ny 400
-#define nz 400
+#define nx 100
+#define ny 100
+#define nz 100
         
 
 double maxeps = 0.01;
-double itmax = 100;
+double itmax = 1;
 
 void init(double *a);
 double dev(const double *A, const double *B);
@@ -380,15 +380,14 @@ int main(int argc, char *argv[])
 
         SAFE_CALL(cudaEventRecord(startt, 0));
         for (int it = 1; it <= itmax; it++) {
-            std::cerr << it << ' ';
             function_i<<<gridDim_i, blockDim_i, block_size>>>(A_device);
-            function_j<<<gridDim_j, blockDim_j, block_size>>>(A_device);
+            /*function_j<<<gridDim_j, blockDim_j, block_size>>>(A_device);
             function_k<<<gridDim_k, blockDim_k, block_size>>>(A_device, ptrdiff);
 
 
             eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             if (eps < maxeps)
-                break;
+                break;*/
         }
         SAFE_CALL(cudaEventRecord(endt, 0));
 
@@ -398,6 +397,8 @@ int main(int argc, char *argv[])
         SAFE_CALL(cudaEventDestroy(endt));
 
         SAFE_CALL(cudaMemcpy(A_host, A_device, size, cudaMemcpyDeviceToHost));
+
+        std::cout << A_host(10, 17, 3) << std::endl;
 
         SAFE_CALL(cudaFree(A_device));
     }
