@@ -1,5 +1,6 @@
 /* ADI program */
 
+#include <__clang_cuda_builtin_vars.h>
 #include <cstdio>
 #include <ctime>
 #include <math.h>
@@ -95,11 +96,14 @@ __global__ void function_i(double *A) {
 
 
     if (threadIdx.x == blockDim.x - 1)
-        if (i < nx)
-            if (j < ny)
-                if (k < nz) {
-                    val_i[j][k] = (my_block_id == gridDim.x - 1) ? A(0, j, k) : A(i, j, k);
+        if (j < ny)
+            if (k < nz) {
+                if (my_block_id == gridDim.x - 1) {
+                    val_i[j][k] = A(0, j, k);
+                } else {
+                    val_i[j][k] = A(i, j, k);
                 }
+            }
 
     if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
         __threadfence();
