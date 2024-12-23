@@ -406,8 +406,11 @@ int main(int argc, char *argv[])
         SAFE_CALL(cudaEventRecord(startt, 0));
         for (int it = 1; it <= itmax; it++) {
             function_i<<<gridDim_i, blockDim_i, block_size>>>(A_device);
+            rotate<<<gridDim_r, blockDim_r>>>(A_device);
             function_j<<<gridDim_j, blockDim_j, block_size>>>(A_device);
+            rotate<<<gridDim_r, blockDim_r>>>(A_device);
             function_k<<<gridDim_k, blockDim_k, block_size>>>(A_device, ptrdiff);
+            rotate<<<gridDim_r, blockDim_r>>>(A_device);
 
 
             eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
@@ -420,6 +423,10 @@ int main(int argc, char *argv[])
         SAFE_CALL(cudaEventElapsedTime(&gpu_time, startt, endt));
         SAFE_CALL(cudaEventDestroy(startt));
         SAFE_CALL(cudaEventDestroy(endt));
+
+
+        rotate<<<gridDim_r, blockDim_r>>>(A_device);
+        rotate<<<gridDim_r, blockDim_r>>>(A_device);
 
         SAFE_CALL(cudaMemcpy(A_host, A_device, size, cudaMemcpyDeviceToHost));
 
