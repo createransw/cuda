@@ -327,7 +327,7 @@ int main(int argc, char *argv[])
     const long size = nx * ny * nz * sizeof(double);
     double *A = (double*)malloc(size);
 
-    double cpu_time = 0;
+    float cpu_time = 0;
     if (CPU) {
         init(A);
 
@@ -363,7 +363,7 @@ int main(int argc, char *argv[])
     }
 
     double *A_host = (double*)malloc(size);
-    double gpu_time = 0;
+    float gpu_time = 0;
     if (GPU) {
         int deviceCount = 0;
         SAFE_CALL(cudaGetDeviceCount(&deviceCount));
