@@ -98,7 +98,7 @@ __global__ void function_i(double *A) {
         if ((j > 0) && (j < ny - 1))
             if ((k > 0) && (k < nz - 1))
                A(i, j, k) = temp_i(threadIdx.x, threadIdx.y, threadIdx.z) + val_i[j][k] / (1 << (threadIdx.x + 1));
-    printf("%f ", A(i, j, k));
+    printf("%f ", temp_i(threadIdx.x, threadIdx.y, threadIdx.z) );
     __syncthreads();
 
 
