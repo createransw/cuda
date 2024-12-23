@@ -51,11 +51,10 @@ __device__ double val_k[nx][ny];
 
 __global__ void function_i(double *A) {
     __shared__ int my_block_id;
-    my_block_id = blockIdx.x;
-    /*if (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0) {
+    if (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0) {
         my_block_id = atomicAdd(&ord_i[blockIdx.y][blockIdx.z], 1);
     }
-    __syncthreads();*/
+    __syncthreads();
 
     int i = my_block_id * blockDim.x + threadIdx.x + 1;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
