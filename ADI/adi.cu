@@ -177,7 +177,7 @@ __global__ void function_j(double *A) {
         atomicAdd(&dim_j[blockIdx.x][blockIdx.z], 1);
         if (my_block_id  == gridDim.y - 1) {
             dim_j[blockIdx.x][blockIdx.z] = 0;
-            ord_i[blockIdx.x][blockIdx.z] = 0;
+            ord_j[blockIdx.x][blockIdx.z] = 0;
         }
     } 
 }
