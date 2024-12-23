@@ -478,6 +478,7 @@ double dev(const double *A, const double *B) {
             for (int k = 1; k < nz - 1; k++)
             {
                 double tmp = fabs(B(i, j, k) - A(i, j, k));
+                std::cout << tmp << ' ';
                 delta = Max(tmp, delta);
                 if (A(i, j, k) == 0) count++;
             }
