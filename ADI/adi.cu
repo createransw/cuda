@@ -31,7 +31,7 @@
         
 
 double maxeps = 0.01;
-double itmax = 1;
+double itmax = 50;
 
 void init(double *a);
 double dev(const double *A, const double *B);
@@ -418,7 +418,9 @@ double dev(const double *A, const double *B) {
             for (int k = 1; k < nz - 1; k++)
             {
                 double tmp = fabs(B(i, j, k) - A(i, j, k));
-                double tmp1 = tmp / fabs(B(i, j, k));
+                double tmp1 = 0;
+                if (fabs(B(i, j, k) > 0.0001))
+                    tmp1 = tmp / fabs(B(i, j, k));
                 if (tmp > delta) {
                     I = i;
                     J = j;
@@ -430,7 +432,7 @@ double dev(const double *A, const double *B) {
 
                 if (A(i, j, k) == 0) count++;
             }
-    std::cout << '(' << I << ',' << J << ',' << K << ')' << std::endl;
+    //std::cout << '(' << I << ',' << J << ',' << K << ')' << std::endl;
     std::cout << relative << std::endl;
     return A == B ? count : delta;
 }
