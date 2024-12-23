@@ -83,11 +83,11 @@ __global__ void function_i(double *A) {
         __syncthreads();
         temp_i(threadIdx.x, threadIdx.y, threadIdx.z) += (tmp / (1 << d));
     }
+    printf("%f ", temp_i(threadIdx.x, threadIdx.y, threadIdx.z) );
     if (i < nx - 1)
         if (j < ny)
             if (k < nz)
                 temp_i(threadIdx.x, threadIdx.y, threadIdx.z) += A(i + 1, j, k) / 2;
-    printf("%f ", temp_i(threadIdx.x, threadIdx.y, threadIdx.z) );
 
 
     if ((threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
