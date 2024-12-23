@@ -23,7 +23,7 @@
 #define A_host(i, j, k) A_host[((i) * ny + (j)) * nz + (k)]
 #define B(i, j, k) B[((i) * ny + (j)) * nz + (k)]
 #define eps(i, j, k) eps[((i) * ny + (j)) * nz + (k)]
-#define temp(i, j, k) temp[((i) * 7 + (j)) * 4 + (k)]
+#define temp(i, j, k) temp[((i) * 8 + (j)) * 4 + (k)]
 
 #define nx 800
 #define ny 800
