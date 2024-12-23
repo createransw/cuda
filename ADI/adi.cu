@@ -80,9 +80,9 @@ __global__ void function_i(double *A) {
     for (int d = 1; d < blockDim.x; d <<= 1) {
         __syncthreads();
         double tmp = (threadIdx.x >= d) ? temp_i(threadIdx.x - d, threadIdx.y, threadIdx.z) : 0;
-    printf("%f ", tmp);
         __syncthreads();
         temp_i(threadIdx.x, threadIdx.y, threadIdx.z) += (tmp / (1 << d));
+        printf("%f ", temp_i(i, j, k));
     }
     if (i < nx - 1)
         if (j < ny)
