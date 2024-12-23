@@ -413,13 +413,13 @@ int main(int argc, char *argv[])
             //rotate<<<gridDim_r, blockDim_r>>>(A_device);
             function_j<<<gridDim_j, blockDim_j, block_size>>>(A_device);
             //rotate<<<gridDim_r, blockDim_r>>>(A_device);
-            function_k<<<gridDim_k, blockDim_k, block_size>>>(A_device, ptrdiff);
+            /*function_k<<<gridDim_k, blockDim_k, block_size>>>(A_device, ptrdiff);
             //rotate<<<gridDim_r, blockDim_r>>>(A_device);
 
 
             eps = thrust::reduce(diff.begin(), diff.end(), 0.0, thrust::maximum<double>());
             if (eps < maxeps)
-                break;
+                break;*/
         }
         SAFE_CALL(cudaEventRecord(endt, 0));
 
