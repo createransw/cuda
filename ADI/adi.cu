@@ -409,7 +409,7 @@ int main(int argc, char *argv[])
 
         SAFE_CALL(cudaEventRecord(startt, 0));
         for (int it = 1; it <= itmax; it++) {
-            //function_i<<<gridDim_i, blockDim_i, block_size>>>(A_device);
+            function_i<<<gridDim_i, blockDim_i, block_size>>>(A_device);
             //rotate<<<gridDim_r, blockDim_r>>>(A_device);
             //function_j<<<gridDim_j, blockDim_j, block_size>>>(A_device);
             //rotate<<<gridDim_r, blockDim_r>>>(A_device);
